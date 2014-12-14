@@ -164,6 +164,13 @@ p a {
 	margin: 0 20px;
 	margin-bottom: 80px;
 }
+#contents .dual {
+	margin: 0 auto;
+}
+
+.dual > table{
+	text-align: left;
+}
 #contents .features {
 	width: 810px;
 	margin: 0 auto;

@@ -123,10 +123,12 @@ img {
 	padding: 54px 40px;
 }
 table {
-	float: center;
+	/*float: center;*/
 	text-align: center;
-	display: block;
-	margin: auto;
+	margin: auto auto;
+	border-collapse: collapse;
+	margin-bottom: 30px;
+	color: #585858;
 }
 h1 {
 	color: #3e3e3e;
@@ -151,9 +153,7 @@ p {
 p a {
 	color: #585858;
 }
-#table {
-	margin: 0 auto;
-}
+
 #tagline h1 {
 	margin-left: 20px;
 	margin-top: 80px;

@@ -37,24 +37,33 @@
 			</p>
 		</div>
 		<div>
-			<h2>Subheading</h2>
+			<h2>Power Source</h2>
 			<p>
-				A detailed description of electrical design (circuit diagrams are appropriate) and any necessary analysis.
+				Sparky's head contains a 2 cell (7.4V) 5000 mAh Lithium Polymer battery, connected with a BEC so it can safely power the IR sensors (section 4), servos (section 3), and the XBEE (section 7). LiPo batteries are useful because we can supply appropriate current to our electrical components, and they will last a long time for our purposes.
 			</p>
-			<h2>Subheading</h2>
+			<h2>Microcontroller</h2>
 			<p>
-				A detailed description of electrical design (circuit diagrams are appropriate) and any necessary analysis.
+				We used an Arduino Mega to be the brains of our entire circuit. The Mega supplies us with enough digital inputs and outputs (including PWM) and performs instructions at an increased rate (as compared to the Arduino Uno).
 			</p>
-		</div>
-		<div>
-			<img src="images/breadboard.png" height="400" width="600">
-			<h2>More Stuff!</h2>
+			<h2>Actuation</h2>
 			<p>
-				A detailed description of electrical design (circuit diagrams are appropriate) and any necessary analysis.
+				Our tadpole uses 3 servos for actuation. One servo connects the head with the rib section of the tadpole. The remaining two servos connect the ribs with each other for an increase range of motion.
 			</p>
-			<h2>Yet another subheading</h2>
+			<h2>Collision Detection</h2>
 			<p>
-				A detailed description of electrical design (circuit diagrams are appropriate) and any necessary analysis.
+				The infrared proximity sensors are part of the autonomous wall/obstacle detection portion of our software. The sensors will know when the tadpole is near a wall or obstacle and alert the microcontroller. The microcontroller will then make decisions on the motion and direction of the tadpole based on possible inputs from the infrared sensors.
+			</p>
+			<h2>Sensors and Indicators</h2>
+			<p>
+				Three LEDs, each mapped to an IR sensor, to light up whenever the infrared sensor detects an obstacle in close proximity.
+			</p>
+			<h2>Tadpole status</h2>
+			<p>
+				This section contains 4 status LED’s to provide feedback to the operator.
+			</p>
+			<h2>Radio communication</h2>
+			<p>
+				The XBEE RF module provides reception/transmission services from the Arduino Mega back to the operator computer.
 			</p>
 		</div>
 	</div>

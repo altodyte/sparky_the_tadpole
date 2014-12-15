@@ -165,11 +165,12 @@ p a {
 	margin-bottom: 80px;
 }
 #contents .dual {
-	margin: 0 auto;
+	margin: 15px auto;
 }
 
 .dual > table{
 	text-align: left;
+	margin-left: 20px;
 }
 #contents .features {
 	width: 810px;

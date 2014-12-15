@@ -44,14 +44,14 @@ float phase2 = 1.57; //phases should be relative
 float smooth_constant = 20;
 float turn_duration = 1.5*6.28/freq*1000;//three cycles of CSwim at least
 float turn_time;
-
+/*
 boolean IR_L_prev = false;
 boolean IR_L_hit = false;
 boolean IR_C_prev = false;
 boolean IR_C_hit = false;
 boolean IR_R_prev = false;
 boolean IR_R_hit = false;
-
+*/
 void setup() 
 { 
   state = STRAIGHT;
@@ -176,22 +176,22 @@ void CSwim()//
   float frequency_C = 1.5;
   float pos;
   p1 = amplitude_C*sin(frequency_C*time)+90.0;
-  p2 = p1;
+  p2 = amplitude_C*sin(frequency_C*time)+90.0;
 }
 void STRAIGHT_fcn()
 {
   reset_state_lights();
   digitalWrite(LED_green, HIGH);
   SSwim();
-  if (IR_L_hit){
+  if (IR_left_val>threshold_lateral){
 //    Serial.println("From STRAIGHT goto TR");
     state = TR;
     turn_time = millis()+turn_duration;}
-  if (IR_R_hit){
+  if (IR_right_val>threshold_lateral){
 //    Serial.println("From STRAIGHT goto TL");
     state = TL;
     turn_time = millis()+turn_duration;}
-  if (IR_C_hit){
+  if (IR_center_val>threshold_center){
     turn_time = millis()+turn_duration;
     if (IR_left_val > IR_right_val){
 //      Serial.println("From STRAIGHT goto TR, bc center");
@@ -250,20 +250,20 @@ void print_sensor_vals()
 void read_in_sensor_vals()
 {
   IR_left_val = analogRead(IR_left);
-  if ((IR_left_val>threshold_lateral)&&(IR_L_prev>threshold_lateral)){
-    IR_L_hit = true;}
-  else{IR_L_hit = false;}
-  IR_L_prev = IR_left_val;
+//  if ((IR_left_val>threshold_lateral)&&(IR_L_prev>threshold_lateral)){
+  //  IR_L_hit = true;}
+//  else{IR_L_hit = false;}
+//  IR_L_prev = IR_left_val;
   IR_center_val = analogRead(IR_center);
-  if ((IR_center_val>threshold_lateral)&&(IR_C_prev>threshold_center)){
-      IR_C_hit = true;}
-  else{IR_C_hit = false;}
-  IR_C_prev = IR_center_val;
+  //if ((IR_center_val>threshold_lateral)&&(IR_C_prev>threshold_center)){
+    //  IR_C_hit = true;}
+//  else{IR_C_hit = false;}
+  //IR_C_prev = IR_center_val;
   IR_right_val = analogRead(IR_right);
-  if ((IR_right_val>threshold_lateral)&&(IR_R_prev>threshold_lateral)){
-      IR_R_hit = true;}
-  else{IR_R_hit = false;}
-  IR_R_prev = IR_right_val;
+//  if ((IR_right_val>threshold_lateral)&&(IR_R_prev>threshold_lateral)){
+  //    IR_R_hit = true;}
+//  else{IR_R_hit = false;}
+//  IR_R_prev = IR_right_val;
 }
 void set_directional_lights()
 {

@@ -115,21 +115,21 @@ void loop()
   Serial.println(state);  
   delay(10);
 }
-void write_servo_pos_smoothed();
+void write_servo_pos_smoothed()
 {
   if (abs(p0-servo_0.read())>smooth_constant)
   {
-    int sgn = (p0-servo_0)/abs(p0-servo_0.read());
+    int sgn = (p0-servo_0.read())/abs(p0-servo_0.read());
     p0 = p0 - sgn*smooth_constant;
   }
   if (abs(p1-servo_1.read())>smooth_constant)
   {
-    int sgn = (p1-servo_1)/abs(p1-servo_1.read());
+    int sgn = (p1-servo_1.read())/abs(p1-servo_1.read());
     p1 = p1 - sgn*smooth_constant;
   }
   if (abs(p2-servo_2.read())>smooth_constant)
   {
-    int sgn = (p2-servo_2)/abs(p2-servo_2.read());
+    int sgn = (p2-servo_2.read())/abs(p2-servo_2.read());
     p2 = p2 - sgn*smooth_constant;
   }
   servo_0.write(p0);
@@ -137,7 +137,7 @@ void write_servo_pos_smoothed();
   servo_2.write(p2);
 }
 
-vvoid receive_comms()
+void receive_comms()
 {
   //Initialize variables
   char buffer[64];

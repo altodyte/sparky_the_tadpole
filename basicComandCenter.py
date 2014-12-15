@@ -146,7 +146,7 @@ while running:
 	else:
 		stale += 1
 	# updateCommand(readInput("Tadpole Command",'same'))
-	command = readInput("Tadpole Command",'same',0.3)
+	command = readInput("Tadpole Command ("+str([tadpole_new_state,servo0,servo1,servo2])+")",'same',0.3)
 	if command in control_states:
 		control_state = command
 	elif command=="same":

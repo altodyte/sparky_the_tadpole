@@ -25,6 +25,7 @@ const int LED_green = 42;
 const int LED_white = 43;
 
 int state;
+int mode;
 const int STOP = 0;
 const int TL = 1;  
 const int STRAIGHT = 2;
@@ -105,41 +106,88 @@ void loop()
     digitalWrite(LED_yellow, HIGH);
     digitalWrite(LED_green, HIGH);
   }
-  Serial.print("[STP TL STR TR CTL CSTR CTR] State: ");
-  Serial.println(state);  
+//Mikes code
+//  Serial.print("[STP TL STR TR CTL CSTR CTR] State: ");
+//  Serial.println(state);
+//Sidds code
+  Serial.print("[State p0 p1 p2] State: ");
+  Serial.println(String(state) + "," + String(p0) + "," + String(p1) + "," + String(p2));
+//End
   delay(10);
 }
 void receive_comms()
 {
+  //Initialize variables
   char buffer[64];
   int i, ch, val;
   long j, num;
 
+  //Read bytes from Serial
   for (i = 0; i<63; i++) {
     for (ch = Serial.read(); ch==-1; ch = Serial.read()) {}
     if (ch==';')
       break;
     buffer[i] = (char)ch;
   }
-  buffer[i] = '\0';
-  if (strncmp(buffer, "STOP", 4)){
-    state = STOP;}
-  else if (strncmp(buffer, "GO", 2)){
-    state = STRAIGHT;}
-  else if (strncmp(buffer, "CTL", 3)){
-    state = CTL;}
-  else if (strncmp(buffer, "CF", 2)){
-    state = CSTRAIGHT;}
-  else if (strncmp(buffer, "CTR", 3)){
-    state = CTR;}
-}
-    
   
-  ((!strncmp(buffer, "ao0", 3)) || (!strncmp(buffer, "AO0", 3))) {
-    ao0 = atoi(buffer+3);
-    rwm.DACwriteChannel(0, ao0);
+  //Split comma-delimted line
+  char *str;
+  char *ind=buffer;
+  int counter = 0;
   
+  //Set variable based on the counter
+  String stateVar;
+  while ((str = strtok_r(ind, ",", &ind)) != NULL){
+   if(str=="x" || counter > 7) break;
+   switch(counter){
+     case 0:
+       stateVar = str;
+       break;
+     case 1:
+       freq = atof(str);
+       break;
+     case 2:
+       amp0 = atoi(str);
+       break;
+     case 3:
+       amp1 = atoi(str);
+       break;
+     case 4:
+       amp2 = atoi(str);
+       break;
+     case 5:
+       phase1 = atof(str);
+       break;
+     case 6:
+       phase2 = atof(str);
+       break;
+     case 7:
+       mode = atoi(str);
+       break;
+     default:
+       break;
+    }
+    counter++;
+  }
+  
+  // Set the state based on stateVar variable
+  if (stateVar=="STOP"){
+    state = STOP;
+  }
+  else if (stateVar=="GO"){
+    state = STRAIGHT;
+  }
+ else if (stateVar=="CTL"){
+    state = CTL;
+  }
+  else if (stateVar=="CF"){
+    state = CSTRAIGHT;
+  }
+  else if (stateVar=="CTR"){
+    state = CTR;
+  }
 }
+
 
 void STOP_fcn()
 {

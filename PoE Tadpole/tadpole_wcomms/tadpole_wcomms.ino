@@ -50,6 +50,7 @@ void setup()
 { 
   state = STOP;
   Serial.begin(9600);
+  Serial1.begin(38400);
   pinMode(LED_red, OUTPUT);
   pinMode(LED_yellow, OUTPUT);
   pinMode(LED_green, OUTPUT);
@@ -110,26 +111,30 @@ void loop()
     digitalWrite(LED_yellow, HIGH);
     digitalWrite(LED_green, HIGH);
   }
-  Serial.print("[STP TL STR TR CTL CSTR CTR] State: ");
+  //Serial.print("[STP TL STR TR CTL CSTR CTR] State: ");
   write_servo_pos_smoothed();
-  Serial.println(state);  
+  //Serial.println(state);  
+  Serial1.println(String(state) + "," + String(p0) + "," + String(p1) + "," + String(p2));
   delay(10);
+//  if (Serial1.available()){
+//    Serial1.write(Serial1.read());
+//  }
 }
-void write_servo_pos_smoothed();
+void write_servo_pos_smoothed()
 {
   if (abs(p0-servo_0.read())>smooth_constant)
   {
-    int sgn = (p0-servo_0)/abs(p0-servo_0.read());
+    int sgn = (p0-servo_0.read())/abs(p0-servo_0.read());
     p0 = p0 - sgn*smooth_constant;
   }
   if (abs(p1-servo_1.read())>smooth_constant)
   {
-    int sgn = (p1-servo_1)/abs(p1-servo_1.read());
+    int sgn = (p1-servo_1.read())/abs(p1-servo_1.read());
     p1 = p1 - sgn*smooth_constant;
   }
   if (abs(p2-servo_2.read())>smooth_constant)
   {
-    int sgn = (p2-servo_2)/abs(p2-servo_2.read());
+    int sgn = (p2-servo_2.read())/abs(p2-servo_2.read());
     p2 = p2 - sgn*smooth_constant;
   }
   servo_0.write(p0);
@@ -139,43 +144,75 @@ void write_servo_pos_smoothed();
 
 void receive_comms()
 {
+  //Initialize variables
   char buffer[64];
   int i, ch, val;
   long j, num;
 
+  //Read bytes from Serial
   for (i = 0; i<63; i++) {
     for (ch = Serial.read(); ch==-1; ch = Serial.read()) {}
     if (ch==';')
       break;
     buffer[i] = (char)ch;
   }
- 
-  String str1 = find_next(buffer,4);
-  freq = atof(find_next(&(buffer[5]),4).c_str());
-  amp0 = atoi(find_next(&(buffer[10]),2).c_str());
-  amp1 = atoi(find_next(&(buffer[13]),2).c_str());
-  amp2 = atoi(find_next(&(buffer[16]),2).c_str());
-  phase1 = atof(find_next(&(buffer[19]),5).c_str());
-  phase2 = atof(find_next(&(buffer[25]),5).c_str());
-  mode = atoi(find_next(&(buffer[31]),2).c_str());
   
-  if (strncmp(buffer, "STOP", 4)){
-    state = STOP;}
-  else if (strncmp(buffer, "GO", 2)){
-    state = STRAIGHT;}
- else if (strncmp(buffer, "CTL", 3)){
-    state = CTL;}
-  else if (strncmp(buffer, "CF", 2)){
-    state = CSTRAIGHT;}
-  else if (strncmp(buffer, "CTR", 3)){
-    state = CTR;}
-}
-String find_next(char *ptr,int bytes){
-  String toRet = "";
-  for(int i = 0; i < bytes; i++){
-    if((ptr[i]>='0'&&ptr[i]<='9')||ptr[i]=='.'||(ptr[i]>='A'&&ptr[i]<='Z')) toRet+=ptr[i];
+  //Split comma-delimted line
+  char *str;
+  char *ind=buffer;
+  int counter = 0;
+  
+  //Set variable based on the counter
+  String stateVar;
+  while ((str = strtok_r(ind, ",", &ind)) != NULL){
+   if(str=="x" || counter > 7) break;
+   switch(counter){
+     case 0:
+       stateVar = str;
+       break;
+     case 1:
+       freq = atof(str);
+       break;
+     case 2:
+       amp0 = atoi(str);
+       break;
+     case 3:
+       amp1 = atoi(str);
+       break;
+     case 4:
+       amp2 = atoi(str);
+       break;
+     case 5:
+       phase1 = atof(str);
+       break;
+     case 6:
+       phase2 = atof(str);
+       break;
+     case 7:
+       mode = atoi(str);
+       break;
+     default:
+       break;
+    }
+    counter++;
   }
-  return toRet;
+  
+  // Set the state based on stateVar variable
+  if (stateVar=="STOP"){
+    state = STOP;
+  }
+  else if (stateVar=="GO"){
+    state = STRAIGHT;
+  }
+ else if (stateVar=="CTL"){
+    state = CTL;
+  }
+  else if (stateVar=="CF"){
+    state = CSTRAIGHT;
+  }
+  else if (stateVar=="CTR"){
+    state = CTR;
+  }
 }
 
 
@@ -299,113 +336,3 @@ void set_directional_lights()
   else{digitalWrite(LED_center, LOW);}
 }
 
-/*
-void command() {
-  char buffer[64];
-  int i, ch, val;
-  long j, num;
-
-  for (i = 0; i<63; i++) {
-    for (ch = Serial.read(); ch==-1; ch = Serial.read()) {}
-    if (ch==';')
-      break;
-    buffer[i] = (char)ch;
-  }
-  buffer[i] = '\0';
-  if ((!strncmp(buffer, "ao0?", 4)) || (!strncmp(buffer, "AO0?", 4))) {
-    Serial.print("AO0 = ");
-    Serial.println(ao0, DEC);
-  } else if ((!strncmp(buffer, "ao0", 3)) || (!strncmp(buffer, "AO0", 3))) {
-    ao0 = atoi(buffer+3);
-    rwm.DACwriteChannel(0, ao0);
-  } else if ((!strncmp(buffer, "ao1?", 4)) || (!strncmp(buffer, "AO1?", 4))) {
-    Serial.print("AO1 = ");
-    Serial.println(ao1, DEC);
-  } else if ((!strncmp(buffer, "ao1", 3)) || (!strncmp(buffer, "AO1", 3))) {
-    ao1 = atoi(buffer+3);
-    rwm.DACwriteChannel(1, ao1);
-  } else if ((!strncmp(buffer, "ai0?", 4)) || (!strncmp(buffer, "AI0?", 4))) {
-    Serial.print("AI0 = ");
-    Serial.println(rwm.ADCreadChannel(0), DEC);
-  } else if ((!strncmp(buffer, "ai1?", 4)) || (!strncmp(buffer, "AI1?", 4))) {
-    Serial.print("AI1 = ");
-    Serial.println(rwm.ADCreadChannel(1), DEC);
-  } else if ((!strncmp(buffer, "ai2?", 4)) || (!strncmp(buffer, "AI2?", 4))) {
-    Serial.print("AI2 = ");
-    Serial.println(rwm.ADCreadChannel(2), DEC);
-  } else if ((!strncmp(buffer, "ai3?", 4)) || (!strncmp(buffer, "AI3?", 4))) {
-    Serial.print("AI3 = ");
-    Serial.println(rwm.ADCreadChannel(3), DEC);
-  } else if ((!strncmp(buffer, "aid0?", 5)) || (!strncmp(buffer, "AID0?", 5))) {
-    Serial.print("AID0 = ");
-    Serial.println(rwm.ADCreadChannelDiff(0), DEC);
-  } else if ((!strncmp(buffer, "aid1?", 5)) || (!strncmp(buffer, "AID1?", 5))) {
-    Serial.print("AID1 = ");
-    Serial.println(rwm.ADCreadChannelDiff(1), DEC);
-  } else if ((!strncmp(buffer, "interval?", 9)) || (!strncmp(buffer, "INTERVAL?", 9))) {
-    Serial.print("interval = ");
-    Serial.println(interval, DEC);
-  } else if ((!strncmp(buffer, "interval", 8)) || (!strncmp(buffer, "INTERVAL", 8))) {
-    interval = (unsigned long)atol(buffer+8);
-  } else if ((!strncmp(buffer, "samples?", 8)) || (!strncmp(buffer, "SAMPLES?", 8))) {
-    Serial.print("samples = ");
-    Serial.println(samples, DEC);
-  } else if ((!strncmp(buffer, "samples", 7)) || (!strncmp(buffer, "SAMPLES", 7))) {
-    samples = (unsigned long)atol(buffer+7);
-  } else if ((!strncmp(buffer, "clear", 5)) || (!strncmp(buffer, "CLEAR", 5))) {
-    rwm.EEPROMwriteEnable();
-    rwm.EEPROMchipErase();
-  } else if ((!strncmp(buffer, "address?", 8)) || (!strncmp(buffer, "ADDRESS?", 8))) {
-    Serial.print("address = ");
-    Serial.println(address, DEC);
-  } else if ((!strncmp(buffer, "address", 7)) || (!strncmp(buffer, "ADDRESS", 7))) {
-    address = (unsigned long)atol(buffer+7);
-  } else if ((!strncmp(buffer, "writebyte", 9)) || (!strncmp(buffer, "WRITEBYTE", 9))) {
-    val = atoi(buffer+9);
-    rwm.EEPROMwriteByte(address, (byte)val);
-  } else if ((!strncmp(buffer, "readbyte?", 9)) || (!strncmp(buffer, "READBYTE?", 9))) {
-    Serial.print("EEPROM[");
-    Serial.print(address, DEC);
-    Serial.print("] = ");
-    Serial.println(rwm.EEPROMreadByte(address), DEC);
-  } else if ((!strncmp(buffer, "writeint", 8)) || (!strncmp(buffer, "WRITEINT", 8))) {
-    val = atoi(buffer+9);
-    rwm.EEPROMwriteInt(address, val);
-  } else if ((!strncmp(buffer, "readint?", 8)) || (!strncmp(buffer, "READINT?", 8))) {
-    Serial.print("EEPROM[");
-    Serial.print(address, DEC);
-    Serial.print("] = ");
-    Serial.println(rwm.EEPROMreadInt(address), DEC);
-  } else if ((!strncmp(buffer, "readbytes", 9)) || (!strncmp(buffer, "READBYTES", 9))) {
-    num = atol(buffer+9);
-    for (j = 0; j<num; j++) {
-      Serial.print(rwm.EEPROMreadByte(address+j), DEC);
-      if (j+1==num)
-        Serial.println("");
-      else
-        Serial.print(",");
-    }
-  } else if ((!strncmp(buffer, "readints", 8)) || (!strncmp(buffer, "READINTS", 8))) {
-    num = atol(buffer+9);
-    for (j = 0; j<num; j++) {
-      Serial.print(rwm.EEPROMreadInt(address+j), DEC);
-      if (j+1==num)
-        Serial.println("");
-      else
-        Serial.print(",");
-    }
-  } else if ((!strncmp(buffer, "log", 3)) || (!strncmp(buffer, "LOG", 3))) {
-    Serial.println("Clearing the EEPROM.");
-    rwm.EEPROMwriteEnable();
-    rwm.EEPROMchipErase();
-    rwm.EEPROMwriteByte(0x1FFFC, 1);
-    rwm.EEPROMwriteByte(0x1FFFD, lowByte(word(interval&0xFFFF)));
-    rwm.EEPROMwriteByte(0x1FFFE, highByte(word(interval&0xFFFF)));
-    rwm.EEPROMwriteByte(0x1FFFF, byte(interval>>16));
-    Serial.println("Disconnect the USB cable and reset the Arduino to start logging data.");
-  } else if ((!strncmp(buffer, "dump", 4)) || (!strncmp(buffer, "DUMP", 4))) {
-    dumpdata();
-  }
-}
-
-*/

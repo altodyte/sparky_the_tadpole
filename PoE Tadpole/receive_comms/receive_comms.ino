@@ -28,15 +28,15 @@ void receive_comms()
   phase2 = atof(find_next(&(buffer[25]),5).c_str());
   mode = atoi(find_next(&(buffer[31]),2).c_str());
   
-  if (strncmp(buffer, "STOP", 4)){
+  if (stateVar=="STOP"){
     state = STOP;}
-  else if (strncmp(buffer, "GO", 2)){
+  else if (stateVar=="GO"){
     state = STRAIGHT;}
- else if (strncmp(buffer, "CTL", 3)){
+ else if (stateVar=="CTL"){
     state = CTL;}
-  else if (strncmp(buffer, "CF", 2)){
+  else if (stateVar=="CF"){
     state = CSTRAIGHT;}
-  else if (strncmp(buffer, "CTR", 3)){
+  else if (stateVar=="CTR"){
     state = CTR;}
 }
 

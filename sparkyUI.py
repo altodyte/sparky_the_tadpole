@@ -10,6 +10,7 @@ import math
 from math import atan2, degrees, pi, sin, cos, radians
 import time
 import numpy as np
+from optimize_w_ga import *
 
 class WorldModel:
 	"""encodes simulator world state"""
@@ -72,17 +73,47 @@ class Ribbit:
 
 		self.tadpole = tadpole
 
+		self.control_state = "Manual" #either manual or auto or run_opt
+		self.tadpole_prev_state = "STOP"
+		self.tadpole_new_state = None #needs to be read in
+		self.commandString = "STOP 0 0 0 0 0 0" #determined by transmission protocol
+		self.coords_start = (self.tadpole.xpos, self.tadpole.ypos)
+		self.time_start = time.time()
+		self.heading_start = self.tadpole.heading
+		self.command_params = [0 0 0 0 0 0]
+
 	def readStatus(self):
 		if self.ser.available():
 			self.stale = 0
 			self.line = self.ser.readline()
+
+			#parse status line
+			self.tadpole_prev_state = self.tadpole_new_state
+			self.tadpole_new_state = parsed_state
+			self.tadpole.xpos = parsed_state
+			self.tadpole.ypos = parsed_state
+			self.tadpole.heading = parsed_state
 		else:
 			self.stale += 1
 
+	def updateCommand(self):
+		if self.control_state == "run_opt":
+			if ((self.tadpole_prev_state != "Straight") && (self.tadpole_new_state == "Straight")):
+				self.command_params = optimize_w_ga.get_new_params()
+				self.commandString = "Straight"+self.command_params #or whatever the transmission protocol is
+				self.coords_start = (self.tadpole.xpos, self.tadpole.ypos)
+				self.time_start = time.time()
+			if ((self.tadpole_prev_state == "Straight") && (self.tadpole_new_state != "Straight")):
+				dist = math.sqrt((self.tadpole.xpos - self.coords_start[0])**2+(self.tadpole.ypos - self.coords_start[1])**2)
+				tdiff = time.time()-self.time_start
+				speed = dist/tdiff
+				heading_change = math.abs(self.heading_start-self.tadpole.heading)
+				optimize_w_ga.write_back(self.command_params, speed, heading_change, dist, tdiff)
+
 	def sendCommand(self):
 		"""need to write something to package commands into commandString"""
-		commandString = "I'm a command string!"
-		ser.write(commandString)
+		#commandString = "I'm a command string!"
+		ser.write(self.commandString)
 
 class Tadpole:
 	"""encodes information about Sparky"""
@@ -101,6 +132,8 @@ class Tadpole:
 
 		self.vx = 0 # calculated by WorldSim
 		self.vy = 0 # calculated by WorldSim
+
+		self.state = "STOP"
 
 	def drive(self,model):
 		"""Command the servos"""

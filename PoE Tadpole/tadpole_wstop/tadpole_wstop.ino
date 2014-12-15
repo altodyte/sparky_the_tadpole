@@ -105,8 +105,13 @@ void loop()
     digitalWrite(LED_yellow, HIGH);
     digitalWrite(LED_green, HIGH);
   }
-  Serial.print("[STP TL STR TR CTL CSTR CTR] State: ");
-  Serial.println(state);  
+//Mikes code
+//  Serial.print("[STP TL STR TR CTL CSTR CTR] State: ");
+//  Serial.println(state);
+//Sidds code
+  Serial.print("[State p0 p1 p2] State: ");
+  Serial.println(String(state) + "," + String(p0) + "," + String(p1) + "," + String(p2));
+//End
   delay(10);
 }
 void receive_comms()

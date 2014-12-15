@@ -1,9 +1,12 @@
+//Based on comma-delimited lines read from Serial, variables are set
 void receive_comms()
 {
+  //Initialize variables
   char buffer[64];
   int i, ch, val;
   long j, num;
 
+  //Read bytes from Serial
   for (i = 0; i<63; i++) {
     for (ch = Serial.read(); ch==-1; ch = Serial.read()) {}
     if (ch==';')
@@ -11,9 +14,12 @@ void receive_comms()
     buffer[i] = (char)ch;
   }
   
+  //Split comma-delimted line
   char *str;
   char *ind=buffer;
   int counter = 0;
+  
+  //Set variable based on the counter
   String stateVar;
   while ((str = strtok_r(ind, ",", &ind)) != NULL){
    if(str=="x" || counter > 7) break;
@@ -48,6 +54,7 @@ void receive_comms()
     counter++;
   }
   
+  // Set the state based on stateVar variable
   if (stateVar=="STOP"){
     state = STOP;
   }

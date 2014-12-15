@@ -45,7 +45,7 @@ def get_new_params():
     params_second = sorted_array[ind_second, 4:10]
     combined = recombine_params(params_base, params_second)
     mutated = mutate_params(combined, num_runs)
-    return mutated
+    return mutated.tolist()
     
 def mutate_params(gene, num_runs):
     """modifies the gene by random mutation, final magnitudes set according to freq, amp, phase ranges"""

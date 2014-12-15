@@ -57,7 +57,7 @@ img {
 }
 #navigation li {
 	float: left;
-	width: 160px;
+	width: 140px;
 	text-align: center;
 }
 #navigation li a {
@@ -143,6 +143,13 @@ h2 {
 	font-weight: normal;
 	line-height: 24px;
 	margin: 0 0 12px;
+}
+h3 {
+	color: #2c2c2c;
+	font-size: 18px;
+	font-weight: normal;
+	line-height: 24px;
+	margin: 0 0 10px;
 }
 p {
 	color: #585858;

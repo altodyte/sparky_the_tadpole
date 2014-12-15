@@ -25,6 +25,9 @@
 				<li>
 					<a href="process.html">Progression</a>
 				</li>
+				<li>
+					<a href="about.html">About Us</a>
+				</li>
 			</ul>
 		</div>
 	</div>
@@ -69,9 +72,9 @@
 				<br>
 				In the Stop state, no servo positions are updated.  In the turn states, the head is oriented to the direction of turning and the C gait controls the movement of the final two servos.  In the auto state, if the IR sensors no longer sense an obstacle, and some number of cycles of the C gait have been completed, it transitions to Straight.  In the straight state, every servo moves in a sinusoidal pattern determined by the parameterization of the S gait.  In the auto state, the tadpole transitions to a turn state opposite either side IR being tripped, or to the side with greater clearance if the center IR is tripped.
 				<br>
-				<img src = "images/softwareimage.png" height = "175px" width="500px">
 			</p>
-
+			<img src = "images/softwareimage.png" height = "150px" width="500px">
+			
 			<h2>Subheading</h2>
 			<p>
 				A detailed description of the firmware design with links to complete source code (github or other repository is helpful).

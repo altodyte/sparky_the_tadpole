@@ -74,11 +74,26 @@
 				<br>
 			</p>
 			<img src = "images/softwareimage.png" height = "150px" width="500px">
-			
-			<h2>Subheading</h2>
 			<p>
-				A detailed description of the firmware design with links to complete source code (github or other repository is helpful).
-				A detailed description of software design with links to complete source code (github or other repository is helpful). Please be sure to include a list of all external software dependencies (eg. OpenCV, Google Voice API, etc.)
+				<br>
+				Then, with each iteration of tadpole communication, additional functionality on the Arduino side is added.  In tadpole_wstop, the functionality is the same as the nocomms, except the tadpole will enter the stopped state if it receives the stop command over serial, and will resume motion given the proper command.  In tadpole_wcomms, the Arduino is able to read parameters for the S gait through the commands sent over Serial.  This is critical for the optimization, described below.
+			</p>
+
+			<h2>Software Design (Python)</h2>
+			<p>
+				On the Python side, we wished to build a simple interface that would allow the user to command the tadpole directly, set its parameters, run optimization on the parameters of the its gait, and let it operate autonomously.  The “basicCommandCenter.py” allows users to send a command to set the parameters, take manual control over the robot (determining its state, such as turn or go straight, rather than command servos directy, because it would be difficult to produce useful motion with it).  Communication happens over two Xbee radios, one attached to the computer running python script, and the other attached to the tadpole’s arduino. The commands sent over serial are then parsed and followed by the tadpole to make the appropriate updates.  The three main control modes are ‘manual’, ‘auto’, and ‘optimize’.  Manual and auto work as described above, the new functionality that the TadpoleCommandCenter allows is the optimization scheme.
+				<br>
+				<br>
+				The python script interfaces with a LabView VI that uses the pictures taken by the camera above the Large Project Building pool to get the position of ‘fiducials’ or distinct markers on objects.  The VI returns position and heading of the fiducial.  With this information and reports of the state from the tadpole, we’re able to run an optimization scheme, because we can find the speed over some length of time.  We will attempt to optimize the speed of the tadpole during for its S gait.  This should be the same thing as optimizing the forward velocity, but it is conceivable that this is not the case and we should look at the difference in distance over time elapsed, rather than capturing the velocity over many points of a run.
+				<br>
+				<br>
+				The S gait of the tadpole is parameterized as the frequency of all three servos, individual amplitudes of each servo, and the phase offset of the second from the first, and the third from the second.  This means we have 6 degrees of freedom - not an insignificant state space, and already heavily reduced from the space of all possible parameterizations.  The motivation for this parameterization (and choice of gait) is that it is found in nature, so we should merely aim to replicate for our system what we know is feasible. We reduced frequency down to just one parameter, because it doesn’t make sense for the servos to have cyclic offsets.  We expect frequency and amplitude to be linked, because the frequency should determine the range of achievable amplitudes.  It is conceivable that all of the amplitudes should be different because of their different positions within the linkage.
+				<br>
+				<br>
+				For the actual optimization algorithm, we chose to use a genetic algorithm so that we would not need to encode too much prior belief about the form of the solution (after our dimensionality reduction) and we could search over a varied statespace. We chose to use mutation, recombination, and selection operators in the generation of a new set of parameters for the next run.  We included simulated annealing to gradually reduce the magnitude of mutation over time.
+				<br>
+				<br>
+				Extensions of the software side could have involved a GUI to go along with the command interface.
 			</p>
 		</div>
 	</div>

@@ -107,6 +107,7 @@ heading_start = heading
 control_states = ["MANUAL", "AUTO", "OPT"]
 control_state = "MANUAL" #either manual or auto or run_opt
 tadpole_states = ["STOP", "AUTO LEFT", "AUTO STRAIGHT", "AUTO RIGHT", "CONTROL LEFT", "CONTROL STRAIGHT", "CONTROL RIGHT"]
+# on the tadpole, tadpole_states = ["STP", "TL", "STR", "TR", "CTL", "CSTR", "CTR"]
 tadpole_prev_state = "STOP"
 tadpole_new_state = None #needs to be read in
 commandString = "STOP 0 0 0 0 0 0" #determined by transmission protocol
@@ -134,7 +135,7 @@ while running:
 	if ser.inWaiting():
 		stale = 0
 		line = ser.readline()
-
+		# print "From Tadpole | "+line
 		tokens = line.split(",")
 		state = tadpole_states[int(tokens[0])];
 		servo0 = int(tokens[1])
@@ -177,13 +178,13 @@ while running:
 			command="STOP"
 			commandString = print_comms(command, command_params[0], command_params[1], command_params[2], command_params[3], command_params[4], command_params[5],tadpole_mode)
 		elif command in ["r","right"]:
-			command="CONTROL RIGHT"
+			command="CTR"
 			commandString = print_comms(command, command_params[0], command_params[1], command_params[2], command_params[3], command_params[4], command_params[5],tadpole_mode)
 		elif command in ["str","straight"]: 
-			command="CONTROL STRAIGHT"
+			command="CF"
 			commandString = print_comms(command, command_params[0], command_params[1], command_params[2], command_params[3], command_params[4], command_params[5],tadpole_mode)
 		elif command in ["l","left"]:
-			command="CONTROL LEFT"
+			command="CTL"
 			commandString = print_comms(command, command_params[0], command_params[1], command_params[2], command_params[3], command_params[4], command_params[5],tadpole_mode)
 	if command != "same":
 		print commandString

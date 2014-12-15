@@ -50,6 +50,7 @@ void setup()
 { 
   state = STOP;
   Serial.begin(9600);
+  Serial1.begin(38400);
   pinMode(LED_red, OUTPUT);
   pinMode(LED_yellow, OUTPUT);
   pinMode(LED_green, OUTPUT);
@@ -110,10 +111,14 @@ void loop()
     digitalWrite(LED_yellow, HIGH);
     digitalWrite(LED_green, HIGH);
   }
-  Serial.print("[STP TL STR TR CTL CSTR CTR] State: ");
+  //Serial.print("[STP TL STR TR CTL CSTR CTR] State: ");
   write_servo_pos_smoothed();
-  Serial.println(state);  
+  //Serial.println(state);  
+  Serial1.println(String(state) + "," + String(p0) + "," + String(p1) + "," + String(p2));
   delay(10);
+//  if (Serial1.available()){
+//    Serial1.write(Serial1.read());
+//  }
 }
 void write_servo_pos_smoothed()
 {

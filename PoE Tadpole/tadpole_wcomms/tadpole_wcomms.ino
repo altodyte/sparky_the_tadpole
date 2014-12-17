@@ -93,7 +93,8 @@ void loop()
   read_in_sensor_vals();
   print_sensor_vals();
   set_directional_lights();
-  if (Serial.available()>0) {
+  if (Serial1.available()>0) {
+    Serial1.println("hello Serial1");
     receive_comms();
   }
   switch(state){
@@ -142,77 +143,46 @@ void write_servo_pos_smoothed()
   servo_2.write(p2);
 }
 
+String find_next(char *ptr,int bytes){
+  String toRet = "";
+  for(int i = 0; i < bytes; i++){
+    if((ptr[i]>='0'&&ptr[i]<='9')||ptr[i]=='.'||(ptr[i]>='A'&&ptr[i]<='Z')) toRet+=ptr[i];
+  }
+  return toRet;
+}
+
 void receive_comms()
 {
-  //Initialize variables
   char buffer[64];
   int i, ch, val;
   long j, num;
 
-  //Read bytes from Serial
   for (i = 0; i<63; i++) {
     for (ch = Serial.read(); ch==-1; ch = Serial.read()) {}
     if (ch==';')
       break;
     buffer[i] = (char)ch;
   }
-  
-  //Split comma-delimted line
-  char *str;
-  char *ind=buffer;
-  int counter = 0;
-  
-  //Set variable based on the counter
-  String stateVar;
-  while ((str = strtok_r(ind, ",", &ind)) != NULL){
-   if(str=="x" || counter > 7) break;
-   switch(counter){
-     case 0:
-       stateVar = str;
-       break;
-     case 1:
-       freq = atof(str);
-       break;
-     case 2:
-       amp0 = atoi(str);
-       break;
-     case 3:
-       amp1 = atoi(str);
-       break;
-     case 4:
-       amp2 = atoi(str);
-       break;
-     case 5:
-       phase1 = atof(str);
-       break;
-     case 6:
-       phase2 = atof(str);
-       break;
-     case 7:
-       mode = atoi(str);
-       break;
-     default:
-       break;
-    }
-    counter++;
-  }
-  
-  // Set the state based on stateVar variable
+ 
+  String stateVar = find_next(buffer,4);
+  freq = atof(find_next(&(buffer[5]),4).c_str());
+  amp0 = atoi(find_next(&(buffer[10]),2).c_str());
+  amp1 = atoi(find_next(&(buffer[13]),2).c_str());
+  amp2 = atoi(find_next(&(buffer[16]),2).c_str());
+  phase1 = atof(find_next(&(buffer[19]),5).c_str());
+  phase2 = atof(find_next(&(buffer[25]),5).c_str());
+  mode = atoi(find_next(&(buffer[31]),2).c_str());
+  Serial1.println(stateVar);
   if (stateVar=="STOP"){
-    state = STOP;
-  }
+    state = STOP;}
   else if (stateVar=="GO"){
-    state = STRAIGHT;
-  }
+    state = STRAIGHT;}
  else if (stateVar=="CTL"){
-    state = CTL;
-  }
+    state = CTL;}
   else if (stateVar=="CF"){
-    state = CSTRAIGHT;
-  }
+    state = CSTRAIGHT;}
   else if (stateVar=="CTR"){
-    state = CTR;
-  }
+    state = CTR;}
 }
 
 

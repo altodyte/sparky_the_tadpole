@@ -135,7 +135,7 @@ while running:
 	if ser.inWaiting():
 		stale = 0
 		line = ser.readline()
-		# print "From Tadpole | "+line
+		print "From Tadpole | "+line
 		tokens = line.split(",")
 		state = tadpole_states[int(tokens[0])];
 		servo0 = int(tokens[1])

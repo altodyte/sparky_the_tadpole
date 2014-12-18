@@ -212,6 +212,10 @@ void readCommand(){
 	// Command "m s0 s1 s2 f a0 a1 a2 p1 p2" ex: "5 40 90 113 2 40 60 60 1.57 1.57"
 	// should do more elegant scanning by having start / stop characters
 	delay(1);
+	byte c = 'c';
+	while (c!='$'){
+		c = Serial1.read();
+	}
 	int i = Serial1.parseInt();
 	mode = constrain(i,0,6);
 	// Serial1.println(String(i)+" "+String(p0));
@@ -240,16 +244,15 @@ void readCommand(){
 
 void sendStatus(){
 	// FOR HUMANS
-	Serial1.println("Mode: "+String(mode)+" || Servos Command (Actual): "+String(p0)
-		+" ("+String(constrain(p0,p0min,p0max))+") "+String(p1)+" ("+String(constrain(p0,p0min,p0max))+") "
-		+String(p2)+" ("+String(constrain(p0,p0min,p0max))+") || f: "+doubleToString(freq)+" a0: "+doubleToString(amp0)+
-		" a1: "+doubleToString(amp1)+" a2: "+doubleToString(amp2)+" p1: "+doubleToString(phase1)+" p2: "+doubleToString(phase2));
+	// Serial1.println("Mode: "+String(mode)+" || Servos Command (Actual): "+String(p0)
+	// 	+" ("+String(constrain(p0,p0min,p0max))+") "+String(p1)+" ("+String(constrain(p0,p0min,p0max))+") "
+	// 	+String(p2)+" ("+String(constrain(p0,p0min,p0max))+") || f: "+doubleToString(freq)+" a0: "+doubleToString(amp0)+
+	// 	" a1: "+doubleToString(amp1)+" a2: "+doubleToString(amp2)+" p1: "+doubleToString(phase1)+" p2: "+doubleToString(phase2));
 	// FOR COMPUTERS
-	/*
-	Serial1.println(String(mode)+" "+String(p0)+" "+C+" "+String(p1)+" "+C+" "+String(p2)+" "+C+" "+
+	Serial1.println("T "+String(mode)+" "+String(p0)+" "+String(constrain(p0,p0min,p0max))+" "+String(p1)+" "+
+			String(constrain(p1,p1min,p1max))+" "+String(p2)+" "+String(constrain(p0,p0min,p0max))+" "+
 			doubleToString(freq)+" "+doubleToString(amp0)+" "+doubleToString(amp1)+" "+doubleToString(amp2)+" "+
-			doubleToString(phase1)+" "+doubleToString(phase2));
-	*/
+			doubleToString(phase1)+" "+doubleToString(phase2)+" t ");
 	// For debugging
 	// Serial.println("Mode: "+String(mode)+" | Servos: "+String(p0)+" "+String(p1)+" "+String(p2));
 }

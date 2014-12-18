@@ -10,12 +10,21 @@ const int servo_2_pin = 12;
 int p0 = 90;
 int p1 = 90;
 int p2 = 90;
+
 const int IR_left = A0;
 const int IR_center = A1;
 const int IR_right = A2;
 int threshold_lateral = 300;
 int threshold_center = 300;
 int IR_left_val, IR_center_val, IR_right_val;
+const int window = 20; 
+int index = 0, left_total = 0, left_average = 0;
+int center_total = 0, center_average = 0;
+int right_total = 0, right_average = 0;
+int IR_left_history[window];
+int IR_center_history[window];
+int IR_right_history[window];
+
 const int LED_left = 28;
 const int LED_center = 29;
 const int LED_right = 30;
@@ -91,6 +100,12 @@ void setup()
   digitalWrite(LED_right, LOW);
   digitalWrite(13,LOW);
   delay(500);
+
+  for (int j = 0; j < window; j++){
+    IR_left_history[j] = 0;
+    IR_center_history[j] = 0;
+    IR_right_history[j] = 0;     
+  }
 }  
  
 void loop() 
@@ -249,21 +264,37 @@ void print_sensor_vals()
 }
 void read_in_sensor_vals()
 {
-  IR_left_val = analogRead(IR_left);
+  left_total = left_total - IR_left_history[index];
+  IR_left_history[index] = analogRead(IR_left);
+  left_total = left_total + IR_left_history[index];
+  left_average = left_total/window;
+  IR_left_val = left_average;
+  // IR_left_val = analogRead(IR_left);
 //  if ((IR_left_val>threshold_lateral)&&(IR_L_prev>threshold_lateral)){
   //  IR_L_hit = true;}
 //  else{IR_L_hit = false;}
 //  IR_L_prev = IR_left_val;
-  IR_center_val = analogRead(IR_center);
+center_total = center_total - IR_center_history[index];
+  IR_center_history[index] = analogRead(IR_center);
+    center_total = center_total + IR_center_history[index];
+  // IR_center_val = analogRead(IR_center);
+  center_average = center_total/window;
+  IR_center_val = center_average;
   //if ((IR_center_val>threshold_lateral)&&(IR_C_prev>threshold_center)){
     //  IR_C_hit = true;}
 //  else{IR_C_hit = false;}
   //IR_C_prev = IR_center_val;
-  IR_right_val = analogRead(IR_right);
+  right_total = right_total - IR_right_history[index];
+  IR_right_history[index] = analogRead(IR_right);
+    right_total = right_total + IR_right_history[index];
+    right_average = right_total/window;
+    IR_right_val = right_average;
+  // IR_right_val = analogRead(IR_right);
 //  if ((IR_right_val>threshold_lateral)&&(IR_R_prev>threshold_lateral)){
   //    IR_R_hit = true;}
 //  else{IR_R_hit = false;}
 //  IR_R_prev = IR_right_val;
+  index = (index+1)%window;
 }
 void set_directional_lights()
 {

@@ -255,6 +255,10 @@ void sendStatus(){
 			doubleToString(phase1)+" "+doubleToString(phase2)+" t ");
 	// For debugging
 	// Serial.println("Mode: "+String(mode)+" | Servos: "+String(p0)+" "+String(p1)+" "+String(p2));
+	Serial.println("T "+String(mode)+" "+String(p0)+" "+String(constrain(p0,p0min,p0max))+" "+String(p1)+" "+
+			String(constrain(p1,p1min,p1max))+" "+String(p2)+" "+String(constrain(p0,p0min,p0max))+" "+
+			doubleToString(freq)+" "+doubleToString(amp0)+" "+doubleToString(amp1)+" "+doubleToString(amp2)+" "+
+			doubleToString(phase1)+" "+doubleToString(phase2)+" t ");
 }
 
 void setServos(){

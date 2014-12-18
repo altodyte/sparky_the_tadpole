@@ -89,7 +89,7 @@ tadpole_new_state = None #needs to be read in
 commandString = "0 90 90 90 2 10 10 10 1.57 1.57" #determined by transmission protocol
 
 man_command = "s"
-command_params = [0, 0, 0, 0, 0, 0]
+command_params = [1, 10, 10, 10, 1.57, 1.57]
 
 running = True
 while running:
@@ -117,6 +117,7 @@ while running:
 		while c!="t":
 			c = ser.read()
 			line+=c
+		print line
 		# From Tadpole: Mode S0command S0actual S1c S1a S2c S2a freq amp0 amp1 amp2 phase1 phase2
 		# From Tadpole: 0 90 90 90 90 90 90 2.00 40.00 60.00 60.00 1.57 1.57
 		# print "From Tadpole | "+line
@@ -171,8 +172,8 @@ while running:
 		elif command in ["l","left"]:
 			command="CTL"
 			commandString = print_comms(command, command_params[0], command_params[1], command_params[2], command_params[3], command_params[4], command_params[5],tadpole_mode)
-	if command != "same":
-		print commandString
+	# if command != "same":
+	print commandString
 	ser.write(commandString) # Pass the command string to the tadpole
 
 

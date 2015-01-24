@@ -6,13 +6,13 @@ char c1 = 'd';
 String s1 = "This string";
 int state = 0;
 int color = 0;
-const int LED_left = 30;
-const int LED_center = 31;
-const int LED_right = 32;
+const int LED_left = 28;
+const int LED_center = 29;
+const int LED_right = 30;
 const int LED_red = 40;
-const int LED_yellow = 41;
-const int LED_green = 42;
-const int LED_white = 43;
+const int LED_yellow = 46;
+const int LED_green = 41;
+const int LED_white = 47;
 
 void setup()
 {
@@ -25,7 +25,7 @@ void setup()
   pinMode(LED_left, OUTPUT);
   pinMode(LED_center, OUTPUT);
   pinMode(LED_right, OUTPUT);
-  Serial1.println("setup function");
+  Serial1.println("setup function");  
 }
 void loop()
 {
@@ -33,11 +33,12 @@ void loop()
   delay(500);
   digitalWrite(LED_white, LOW);
   delay(100);
-  state = (state+1)%3;
+  state = state+1;
+  if (state == 3) {state = 0;}
   display_state();
   display_color();
   Serial.println(millis());
-    
+  Serial1.println(millis());    
 }
 
 /*

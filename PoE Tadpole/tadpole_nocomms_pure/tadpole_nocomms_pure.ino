@@ -170,6 +170,7 @@ void TL_fcn()
   digitalWrite(LED_yellow, HIGH);
   p0 = 160;
   CSwim();
+  p2 = 90;
   if ((IR_right_val < threshold_lateral)&&(IR_center_val< threshold_center)&&(millis()>turn_time)){
 //    Serial.println("From TL goto STRAIGHT");
     state = STRAIGHT;}
@@ -180,6 +181,7 @@ void TR_fcn()
   digitalWrite(LED_yellow, HIGH);
   p0 = 20;
   CSwim();
+  p2 = 90;
   if ((IR_left_val < threshold_lateral)&&(IR_center_val< threshold_center)&&(millis()>turn_time)){
 //    Serial.println("From TR goto STRAIGHT");
     state = STRAIGHT;}
@@ -187,8 +189,8 @@ void TR_fcn()
 void CSwim()//
 {
   float time = millis()/1000.0;
-  int amplitude_C = 60;
-  float frequency_C = 1.5;
+  int amplitude_C = 80;
+  float frequency_C = 2.5;
   float pos;
   p1 = amplitude_C*sin(frequency_C*time)+90.0;
   p2 = amplitude_C*sin(frequency_C*time)+90.0;

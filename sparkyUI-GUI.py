@@ -10,20 +10,10 @@ import math
 from math import atan2, degrees, pi, sin, cos, radians
 import time
 import numpy as np
-from optimize_w_ga import *
+# import gui stuff
+from pgu import text, gui as pgui
 
-class WorldModel:
-	"""encodes simulator world state"""
-	def __init__(self): #,windspeed,windheading):
-		self.tadpole1 = Tadpole() #later include tadpole list for support of multiple tadpoles
-		self.clock = pygame.time.Clock()
-		self.godEye = GodEye()
-			
-	def update_model(self):
-		dt = self.clock.tick()/1000.0
-		self.tadpole1.updatePos(self.godEye)
-		self.tadpole1.updateVels()
-		self.tadpole1.drive(self)
+##############################GOD-EYE_COMMUNICATON_UNIT######################################
 
 class GodEye():
 	def __init__(self):
@@ -57,6 +47,8 @@ class GodEye():
 			# yes I know this will break things for now
 		return self.data
 
+##############################TADPOLE_COMMUNICATON_UNIT######################################
+
 class Ribbit:
 	def __init__(self,tadpole,port=61557):
 		self.port = port
@@ -73,47 +65,32 @@ class Ribbit:
 
 		self.tadpole = tadpole
 
-		self.control_state = "Manual" #either manual or auto or run_opt
-		self.tadpole_prev_state = "STOP"
-		self.tadpole_new_state = None #needs to be read in
-		self.commandString = "STOP 0 0 0 0 0 0" #determined by transmission protocol
-		self.coords_start = (self.tadpole.xpos, self.tadpole.ypos)
-		self.time_start = time.time()
-		self.heading_start = self.tadpole.heading
-		self.command_params = [0, 0, 0, 0, 0, 0]
-
 	def readStatus(self):
 		if self.ser.available():
 			self.stale = 0
 			self.line = self.ser.readline()
-
-			#parse status line
-			self.tadpole_prev_state = self.tadpole_new_state
-			self.tadpole_new_state = parsed_state
-			self.tadpole.xpos = parsed_state
-			self.tadpole.ypos = parsed_state
-			self.tadpole.heading = parsed_state
 		else:
 			self.stale += 1
 
-	def updateCommand(self):
-		if self.control_state == "run_opt":
-			if ((self.tadpole_prev_state != "Straight") and (self.tadpole_new_state == "Straight")):
-				self.command_params = optimize_w_ga.get_new_params()
-				self.commandString = "Straight"+self.command_params #or whatever the transmission protocol is
-				self.coords_start = (self.tadpole.xpos, self.tadpole.ypos)
-				self.time_start = time.time()
-			if ((self.tadpole_prev_state == "Straight") and (self.tadpole_new_state != "Straight")):
-				dist = math.sqrt((self.tadpole.xpos - self.coords_start[0])**2+(self.tadpole.ypos - self.coords_start[1])**2)
-				tdiff = time.time()-self.time_start
-				speed = dist/tdiff
-				heading_change = math.abs(self.heading_start-self.tadpole.heading)
-				optimize_w_ga.write_back(self.command_params, speed, heading_change, dist, tdiff)
-
 	def sendCommand(self):
 		"""need to write something to package commands into commandString"""
-		#commandString = "I'm a command string!"
-		ser.write(self.commandString)
+		commandString = "I'm a command string!"
+		ser.write(commandString)
+
+####################################SIMULATOR_UNIT###########################################
+
+class WorldModel:
+	"""encodes simulator world state"""
+	def __init__(self): #,windspeed,windheading):
+		self.tadpole1 = Tadpole() #later include tadpole list for support of multiple tadpoles
+		self.clock = pygame.time.Clock()
+		self.godEye = GodEye()
+			
+	def update_model(self):
+		dt = self.clock.tick()/1000.0
+		self.tadpole1.updatePos(self.godEye)
+		self.tadpole1.updateVels()
+		self.tadpole1.drive(self)
 
 class Tadpole:
 	"""encodes information about Sparky"""
@@ -132,8 +109,6 @@ class Tadpole:
 
 		self.vx = 0 # calculated by WorldSim
 		self.vy = 0 # calculated by WorldSim
-
-		self.state = "STOP"
 
 	def drive(self,model):
 		"""Command the servos"""
@@ -155,6 +130,8 @@ class Tadpole:
 		# This is obviously not yet a calculation
 		self.vx = 0
 		self.vy = 0
+
+####################################WINDOW_NONSENSE##########################################
 
 class PyGameWindowView:
 	"""encodes view of simulation"""
@@ -206,6 +183,44 @@ class PyGameWindowView:
 		self.screen.blit(text_5, (120, 40))
 		self.screen.blit(text_6, (120, 60))
 
+###################################GUI_WINDOW_NONSENSE#######################################
+
+def logRadioAction(arg):
+    """ add the radio button status to the 'edit' window (callback function)"""
+    grp, text = arg
+    text = "Radio Button " + str(grp.value) + " selected"
+    lines.append(text)
+    while len(lines) > lineLimit: lines[0:1] = []
+
+def logCheckAction(arg):
+    """ add the button status to the 'edit' window (callback function)"""
+    btn, text = arg
+    if btn.value:
+        text += ' selected';
+    else:
+        text += ' deselected';
+    lines.append(text)
+    while len(lines) > lineLimit: lines[0:1] = []
+
+def logButtonAction(text):
+    """ add the button status to the 'edit' window (callback function)"""
+    lines.append(text)
+    while len(lines) > lineLimit: lines[0:1] = []
+
+def logInputAction(txt):
+    """ add the input status to the 'edit' window (callback function)"""
+    text = txt.value
+    lines.append(text)
+    while len(lines) > lineLimit: lines[0:1] = []
+
+def logSliderAction(txt):
+    """ add the slider status to the 'edit' window (callback function)"""
+    text = 'Slider is at ' + str(txt.value)
+    lines.append(text)
+    while len(lines) > lineLimit: lines[0:1] = []
+
+###################################STUFF_THAT_RUNS#######################################
+
 class PyGameController:
 	"""handles user inputs and communicates with model"""
 	def __init__(self,model,view): 
@@ -219,26 +234,6 @@ class PyGameController:
 			#remember that the directions are reversed in view
 			#direct control, deprecated
 			pass
-
-def readInput( caption, default, timeout = 0.1):
-	start_time = time.time()
-	sys.stdout.write('%s: '%(caption)); #('%s(%s):'%(caption, default));
-	input = ''
-	while True:
-		if msvcrt.kbhit():
-			chr = msvcrt.getche()
-			if ord(chr) == 13: # enter_key
-				break
-			elif ord(chr) >= 32: #space_char
-				input += chr
-		if len(input) == 0 and (time.time() - start_time) > timeout:
-			break
-
-	print ''  # needed to move to next line
-	if len(input) > 0:
-		return input
-	else:
-		return default
 				
 if __name__ == '__main__':
 	pygame.init()
@@ -247,6 +242,109 @@ if __name__ == '__main__':
 	model = WorldModel() #initial windspeed, windheading
 	view = PyGameWindowView(model,screen)
 	controller = PyGameController(model,view)
+
+	global lines
+	lines = []
+	lineLimit = 20
+
+	#Initialize Everything
+	# pygame.init()
+	pygame.font.init()
+	font = pygame.font.SysFont("default",12)
+	fontBig = pygame.font.SysFont("default",16)
+	fontSub = pygame.font.SysFont("default",8)
+
+	# screen = pygame.display.set_mode(size)
+	pygame.display.set_caption('GUI Test - PGU')
+
+	# create GUI object
+	gui = pgui.App()
+	textArea = pygame.Rect(500, 20, 250, 320)
+
+	# layout using document
+	lo = pgui.Container(width=350)
+
+	# create page label
+	#lo.block(align=-1) #lo.br(8) #lo.tr()
+	title = pgui.Label("PygameTest Page - PGU", font=fontBig) 
+	lo.add(title,29,13)
+
+	# create checkbuttons and add to gui
+	cbt = pgui.Table()
+	cb1 = pgui.Switch()
+	cb1.connect(pgui.CHANGE, logCheckAction, (cb1, "Check Box 1"))
+	cb1l = pgui.Label("Check1")
+	cbt.add(cb1)
+	cbt.add(cb1l)
+	cbt.tr()
+	cb2 = pgui.Switch()
+	cb2.connect(pgui.CHANGE, logCheckAction, (cb2, "Check Box 2"))
+	cb2l = pgui.Label("Check2")
+	cbt.add(cb2)
+	cbt.add(cb2l)
+	cbt.tr()
+	cb3 = pgui.Switch()
+	cb3.connect(pgui.CHANGE, logCheckAction, (cb3, "Check Box 3"))
+	cb3l = pgui.Label("Check3")
+	cbt.add(cb3)
+	cbt.add(cb3l)
+	lo.add(cbt,52,52)
+
+	# create radio buttons, put in table, and add to gui
+	rbt = pgui.Table()
+	radio = pgui.Group()
+	rb1 = pgui.Radio(radio, 1)
+	rb1l = pgui.Label("Mode 1")
+	rbt.add(rb1)
+	rbt.add(rb1l)
+	rbt.tr()
+	rb2 = pgui.Radio(radio, 2)
+	rb2l = pgui.Label("Mode 2")
+	rbt.add(rb2)
+	rbt.add(rb2l)
+	rbt.tr()
+	rb3 = pgui.Radio(radio, 3)
+	rb3l = pgui.Label("Mode 3")
+	rbt.add(rb3)
+	rbt.add(rb3l)
+	rbt.tr()
+	lo.add(rbt,210,52)
+	radio.connect(pgui.CHANGE, logRadioAction, (radio, "Radio Button 3"))
+
+	# create txt box label
+	txtl = pgui.Label("Text", font=fontBig)
+	lo.add(txtl,30,127) 
+	# create text box
+	txt = pgui.Input("next of input", size=45)
+	txt.connect(pgui.BLUR, logInputAction, txt)
+	lo.add(txt,28,149)
+
+	# add buttons, both regular and toggle
+	btn1 = pgui.Button("Button 1")
+	btn1.connect(pgui.CLICK, logButtonAction, ("Button 1 clicked"))
+	lo.add(btn1,36,250)
+	btn2 = pgui.Button("Button 2")
+	btn2.connect(pgui.CLICK, logButtonAction, ("Button 2 clicked"))
+	lo.add(btn2,133,250)
+	btn3 = pgui.Button("Button 3")
+	btn3.connect(pgui.CLICK, logButtonAction, ("Button 3 clicked"))
+	lo.add(btn3,230,250)
+
+	# create slider label
+	sll = pgui.Label("Slider",font=fontBig)
+	lo.add(sll,36,195)
+	# create slider
+	sl = pgui.HSlider(value=1,min=0,max=100,size=32,width=200,height=16)
+	sl.connect(pgui.CHANGE, logSliderAction, sl)
+	lo.add(sl,53,210) #, colspan=3)
+
+	# clear setup noise, and put initial content in
+	lines = []
+	lines.append('top line of input')
+	lines.append('second line of input')
+
+	gui.init(lo)
+
 	running = True
 	while running:
 		for event in pygame.event.get():
@@ -256,13 +354,10 @@ if __name__ == '__main__':
 			controller.handle_keystroke_event(event)
 		model.update_model()
 		view.draw()
-		s = str(readInput("Tadpole Command",'g'))
-		if 'g'==s or 'get'==s or 'status'==s:
-			print "Tadpole Status || Params: "+self.command_params
-		elif "s"==s or "stop"==s: # might want this to be the else case
-		elif "q"==s or "quit"==s:
-			print "Quitting Tadpole Command"
-			
-			break
 		time.sleep(.01)
+
+		# Draw GUI
+        gui.paint(screen)
+        edText = "\n".join(lines)
+        text.writepre(screen, font, textArea, (0,0,0), edText)
 	pygame.quit()

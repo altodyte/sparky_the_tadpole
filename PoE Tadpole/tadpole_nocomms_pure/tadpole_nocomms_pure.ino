@@ -47,8 +47,8 @@ float freq = 2.5;
 float amp0 = 60;
 float amp1 = 80;
 float amp2 = 80;
-float phase1 = 1.57;
-float phase2 = 1.57; //phases should be relative
+float phase1 = -1.57;
+float phase2 = -1.57; //phases should be relative
 
 float smooth_constant = 20;
 float turn_duration = 1.5*6.28/freq*1000;//three cycles of CSwim at least
@@ -110,10 +110,10 @@ void setup()
  
 void loop() 
 { 
-  Serial.println('hello');
+  //Serial.println('hello');
   read_in_sensor_vals();
   set_directional_lights();
-  print_sensor_vals();
+  //print_sensor_vals();
   //READ IN COMMUNICATION
   switch(state){
     case STOP:     STOP_fcn();      break;
@@ -131,8 +131,8 @@ void loop()
     digitalWrite(LED_green, HIGH);
   }
   write_servo_pos_smoothed();
-  Serial.print("[STP TL STR TR CTL CSTR CTR] State: ");
-  Serial.println(state);  
+  //Serial.print("[STP TL STR TR CTL CSTR CTR] State: ");
+  //Serial.println(state);  
   delay(10);
 }
 void write_servo_pos_smoothed()
@@ -155,6 +155,8 @@ void write_servo_pos_smoothed()
   servo_0.write(p0);
   servo_1.write(p1);
   servo_2.write(p2);
+  Serial.println(p2);
+  
 }
 
 void STOP_fcn()
@@ -189,11 +191,11 @@ void TR_fcn()
 void CSwim()//
 {
   float time = millis()/1000.0;
-  int amplitude_C = 80;
+  int amplitude_C = 60;
   float frequency_C = 2.5;
   float pos;
   p1 = amplitude_C*sin(frequency_C*time)+90.0;
-  p2 = amplitude_C*sin(frequency_C*time)+90.0;
+  p2 = 90; //amplitude_C*sin(frequency_C*time)+90.0;
 }
 void STRAIGHT_fcn()
 {

@@ -4,7 +4,7 @@ import msvcrt, sys
 ### X-BEE
 port = 'COM11' # This pretty much has to be manually set (see getComPorts.py for help)
 ser = serial.Serial(port,38400,bytesize=serial.EIGHTBITS,
-			parity=serial.PARITY_NONE,stopbits=serial.STOPBITS_ONE)
+            parity=serial.PARITY_NONE,stopbits=serial.STOPBITS_ONE)
 ser.close() # cleanup from old serial communications
 ser.timeout = 0.01
 
@@ -27,26 +27,39 @@ def readInput( caption, default, timeout = 0.1):
     else:
         return default
 
+def read_all_input(incoming):
+    full_buffer = [incoming]
+    empty = False
+    while(not(empty)):
+        next_read = ser.readline()
+        if next_read == '':
+            empty = True
+        else:
+            full_buffer += [next_read]
+    for line in full_buffer:
+        print line
+
+
 try: 
-	ser.open()
+    ser.open()
 except Exception, e:
-	print "error open serial port: " + str(e)
-	exit()
+    print "error open serial port: " + str(e)
+    exit()
 stale = 0 # Number of calls since freshness
 line = "" # storage for raw line
 
 # availability check on Tadpole waits for a write
-ser.write("EXPERGISCOR RANUNCULE")
+print "INCIPIT"
+ser.write("EXPERGISCERE RANUNCULE")
+
 
 while(True):
-	incoming = ser.readline()
-	if incoming != '':
-		print incoming
-	cmd = readInput("IMPERA> ", '')
-	if cmd == 'DIC!':
-		ser.write("DIC RANUNCULE!")
-	if cmd == 'NICTERE!':
-		ser.write("NICTERE!")
-	if (random.randint(1,1000)==10):
-		ser.write("DIC RANUNCULE!")
-	time.sleep(0.001)
+    incoming = ser.readline()
+    if incoming != '':
+        read_all_input(incoming)
+    cmd = readInput("IMPERA> ", '')
+    if cmd in ["DIC!", "NICTERE!", "DORMI!", "EXPERGISCERE!", "SINISTER!", "DEXTER!"]:
+        ser.write(cmd)
+    if (random.randint(1,1000)==10):
+        ser.write("DIC!")
+    time.sleep(0.001)

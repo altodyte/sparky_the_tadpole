@@ -12,31 +12,30 @@ from optimize_w_ga import *
 import math, sys, msvcrt
 
 def print_comms(state,freq,amp0,amp1,amp2,phase1,phase2,mode=0):
-	# To Tadpole: Mode S0command S1command S2command freq amp0 amp1 amp2 phase1 phase2
-	# To Tadpole: 5 90 90 90 1 10 10 10 1.57 1.57
-	d = {"STOP":0, "GO":2, "CTL":5, "CF":6, "CTR":7}
-	return "$ "+str(d[state])+" "+str(freq)+" "+str(amp0)+" "+str(amp1)+" "+str(amp2) \
-		+" "+str(phase1)+" "+str(phase2)
+    # To Tadpole: Mode S0command S1command S2command freq amp0 amp1 amp2 phase1 phase2
+    # To Tadpole: 5 90 90 90 1 10 10 10 1.57 1.57
+    d = {"STOP":0, "GO":2, "CTL":5, "CF":6, "CTR":7}
+    return "$ "+str(d[state])+" "+str(freq)+" "+str(amp0)+" "+str(amp1)+" "+str(amp2) \
+        +" "+str(phase1)+" "+str(phase2)
 
 def readInput( caption, default, timeout = 0.1):
-	start_time = time.time()
-	sys.stdout.write('%s: '%(caption)); #('%s(%s):'%(caption, default));
-	input = ''
-	while True:
-		if msvcrt.kbhit():
-			chr = msvcrt.getche()
-			if ord(chr) == 13: # enter_key
-				break
-			elif ord(chr) >= 32: #space_char
-				input += chr
-		if len(input) == 0 and (time.time() - start_time) > timeout:
-			break
-
-	print ''  # needed to move to next line
-	if len(input) > 0:
-		return input
-	else:
-		return default
+    start_time = time.time()
+    sys.stdout.write('%s: '%(caption)); #('%s(%s):'%(caption, default));
+    input = ''
+    while True:
+        if msvcrt.kbhit():
+            chr = msvcrt.getche()
+            if ord(chr) == 13: # enter_key
+                break
+            elif ord(chr) >= 32: #space_char
+                input += chr
+        if len(input) == 0 and (time.time() - start_time) > timeout:
+            break
+    print ''  # needed to move to next line
+    if len(input) > 0:
+        return input
+    else:
+        return default
 
 ##############################################################
 
@@ -45,7 +44,7 @@ UDP_IP = "127.0.0.1"
 UDP_PORT = 61557
 
 sock = socket.socket(socket.AF_INET, # Internet
-					 socket.SOCK_DGRAM) # UDP
+                     socket.SOCK_DGRAM) # UDP
 sock.bind((UDP_IP, UDP_PORT))
 
 sock.setblocking(0)
@@ -56,13 +55,13 @@ posStale = 0 # maybe reincorporate staleness later
 ### X-BEE
 port = 'COM9' # This pretty much has to be manually set (see getComPorts.py for help)
 ser = serial.Serial(port,38400,bytesize=serial.EIGHTBITS,
-			parity=serial.PARITY_NONE,stopbits=serial.STOPBITS_ONE)
+            parity=serial.PARITY_NONE,stopbits=serial.STOPBITS_ONE)
 ser.close() # cleanup from old serial communications
 try: 
-	ser.open()
+    ser.open()
 except Exception, e:
-	print "error open serial port: " + str(e)
-	exit()
+    print "error open serial port: " + str(e)
+    exit()
 stale = 0 # Number of calls since freshness
 line = "" # storage for raw line
 
@@ -93,90 +92,90 @@ command_params = [1, 10, 10, 10, 1.57, 1.57]
 
 running = True
 while running:
-	# getPosition() # Updates xpos, ypos, heading when available (Via God-Eye UDP)
-	timeout = 0.1
-	ready = select.select([sock], [], [], timeout)
-	if ready[0]:
-		data = sock.recv(4096)
-		posStale = 0
-		message = data.split(',')
-		i = message.index('P') # UPDATE THIS TO THE CORRECT LETTER FOR THE FIDUCIAL
-		n = message.index('S')
-		# position = [x,y,h]
-		pos = {'x' : message[i+1], 'y' : message[i+2], 'h' : message[i+3],'t' : (message[n+1],message[n+2],message[n+3].split()[0])}
-		xpos = int(pos['x'])
-		ypos = int(pos['y'])
-		heading = int(pos['h'])
-	# readStatus() # Updates tadpole_..._state, servo[0-2] when available (Via Tadpole XBee)
-	if ser.inWaiting():
-		stale = 0
-		c = 'g'
-		while c!="T":
-			c = ser.read()
-		line = ''
-		while c!="t":
-			c = ser.read()
-			line+=c
-		print line
-		# From Tadpole: Mode S0command S0actual S1c S1a S2c S2a freq amp0 amp1 amp2 phase1 phase2
-		# From Tadpole: 0 90 90 90 90 90 90 2.00 40.00 60.00 60.00 1.57 1.57
-		# print "From Tadpole | "+line
-		tokens = line.split(" ")
-		# print "tokens: "+str(tokens)
-		state = tadpole_states[int(tokens[1])];
-		servo0 = int(tokens[3])
-		servo1 = int(tokens[5])
-		servo2 = int(tokens[7])
+    # getPosition() # Updates xpos, ypos, heading when available (Via God-Eye UDP)
+    timeout = 0.1
+    ready = select.select([sock], [], [], timeout)
+    if ready[0]:
+        data = sock.recv(4096)
+        posStale = 0
+        message = data.split(',')
+        i = message.index('P') # UPDATE THIS TO THE CORRECT LETTER FOR THE FIDUCIAL
+        n = message.index('S')
+        # position = [x,y,h]
+        pos = {'x' : message[i+1], 'y' : message[i+2], 'h' : message[i+3],'t' : (message[n+1],message[n+2],message[n+3].split()[0])}
+        xpos = int(pos['x'])
+        ypos = int(pos['y'])
+        heading = int(pos['h'])
+    # readStatus() # Updates tadpole_..._state, servo[0-2] when available (Via Tadpole XBee)
+    if ser.inWaiting():
+        stale = 0
+        c = 'g'
+        while c!="T":
+            c = ser.read()
+        line = ''
+        while c!="t":
+            c = ser.read()
+            line+=c
+        print line
+        # From Tadpole: Mode S0command S0actual S1c S1a S2c S2a freq amp0 amp1 amp2 phase1 phase2
+        # From Tadpole: 0 90 90 90 90 90 90 2.00 40.00 60.00 60.00 1.57 1.57
+        # print "From Tadpole | "+line
+        tokens = line.split(" ")
+        # print "tokens: "+str(tokens)
+        state = tadpole_states[int(tokens[1])];
+        servo0 = int(tokens[3])
+        servo1 = int(tokens[5])
+        servo2 = int(tokens[7])
 
-		tadpole_prev_state = tadpole_new_state
-		tadpole_new_state = state
-	else:
-		stale += 1
-	# updateCommand(readInput("Tadpole Command",'same'))
-	command = readInput("Tadpole Command ("+str([tadpole_new_state,servo0,servo1,servo2])+")",'same',0.3)
-	if command in control_states:
-		control_state = command
-	elif command=="same":
-		pass
-	elif command in ["r","str","l","right","straight","left","s","stop","STOP"]:
-		control_state = "MANUAL"
-		man_command = command
-	else:
-		print "Your command was invalid. No changes have been made. (Mode: "+str(control_state)+")"
-	if control_state == "OPT":
-		if ((tadpole_prev_state != "AUTO STRAIGHT") and (tadpole_new_state == "AUTO STRAIGHT")):
-			command_params = optimize_w_ga.get_new_params()
-			commandString = print_comms("GO", command_params[0], command_params[1], command_params[2], command_params[3], command_params[4], command_params[5],tadpole_mode)
-			#send command here as well
-			coords_start = (xpos, ypos) # bookkeeping for optimization
-			time_start = time.time()
-		if ((tadpole_prev_state == "AUTO STRAIGHT") and (tadpole_new_state != "AUTO STRAIGHT")):
-			dist = math.sqrt((xpos - coords_start[0])**2+(ypos - coords_start[1])**2)
-			tdiff = time.time()-time_start
-			speed = dist/tdiff
-			heading_change = math.abs(heading_start-heading)
-			optimize_w_ga.write_back(command_params, speed, heading_change, dist, tdiff)
-	elif control_state == "AUTO":
-		commandString = print_comms("GO", command_params[0], command_params[1], command_params[2], command_params[3], command_params[4], command_params[5],tadpole_mode)
-	elif control_state == "MANUAL":
-		# remap command inputs
-		if command in ["s","stop","STOP","MANUAL"]: 
-			command="STOP"
-			commandString = print_comms(command, command_params[0], command_params[1], command_params[2], command_params[3], command_params[4], command_params[5],tadpole_mode)
-		elif command in ["r","right"]:
-			command="CTR"
-			commandString = print_comms(command, command_params[0], command_params[1], command_params[2], command_params[3], command_params[4], command_params[5],tadpole_mode)
-		elif command in ["str","straight"]: 
-			command="CF"
-			commandString = print_comms(command, command_params[0], command_params[1], command_params[2], command_params[3], command_params[4], command_params[5],tadpole_mode)
-		elif command in ["l","left"]:
-			command="CTL"
-			commandString = print_comms(command, command_params[0], command_params[1], command_params[2], command_params[3], command_params[4], command_params[5],tadpole_mode)
-	# if command != "same":
-	print commandString
-	ser.write(commandString) # Pass the command string to the tadpole
+        tadpole_prev_state = tadpole_new_state
+        tadpole_new_state = state
+    else:
+        stale += 1
+    # updateCommand(readInput("Tadpole Command",'same'))
+    command = readInput("Tadpole Command ("+str([tadpole_new_state,servo0,servo1,servo2])+")",'same',0.3)
+    if command in control_states:
+        control_state = command
+    elif command=="same":
+        pass
+    elif command in ["r","str","l","right","straight","left","s","stop","STOP"]:
+        control_state = "MANUAL"
+        man_command = command
+    else:
+        print "Your command was invalid. No changes have been made. (Mode: "+str(control_state)+")"
+    if control_state == "OPT":
+        if ((tadpole_prev_state != "AUTO STRAIGHT") and (tadpole_new_state == "AUTO STRAIGHT")):
+            command_params = optimize_w_ga.get_new_params()
+            commandString = print_comms("GO", command_params[0], command_params[1], command_params[2], command_params[3], command_params[4], command_params[5],tadpole_mode)
+            #send command here as well
+            coords_start = (xpos, ypos) # bookkeeping for optimization
+            time_start = time.time()
+        if ((tadpole_prev_state == "AUTO STRAIGHT") and (tadpole_new_state != "AUTO STRAIGHT")):
+            dist = math.sqrt((xpos - coords_start[0])**2+(ypos - coords_start[1])**2)
+            tdiff = time.time()-time_start
+            speed = dist/tdiff
+            heading_change = math.abs(heading_start-heading)
+            optimize_w_ga.write_back(command_params, speed, heading_change, dist, tdiff)
+    elif control_state == "AUTO":
+        commandString = print_comms("GO", command_params[0], command_params[1], command_params[2], command_params[3], command_params[4], command_params[5],tadpole_mode)
+    elif control_state == "MANUAL":
+        # remap command inputs
+        if command in ["s","stop","STOP","MANUAL"]: 
+            command="STOP"
+            commandString = print_comms(command, command_params[0], command_params[1], command_params[2], command_params[3], command_params[4], command_params[5],tadpole_mode)
+        elif command in ["r","right"]:
+            command="CTR"
+            commandString = print_comms(command, command_params[0], command_params[1], command_params[2], command_params[3], command_params[4], command_params[5],tadpole_mode)
+        elif command in ["str","straight"]: 
+            command="CF"
+            commandString = print_comms(command, command_params[0], command_params[1], command_params[2], command_params[3], command_params[4], command_params[5],tadpole_mode)
+        elif command in ["l","left"]:
+            command="CTL"
+            commandString = print_comms(command, command_params[0], command_params[1], command_params[2], command_params[3], command_params[4], command_params[5],tadpole_mode)
+    # if command != "same":
+    print commandString
+    ser.write(commandString) # Pass the command string to the tadpole
 
 
-		# runs optimization mumbo jumbo if in mode OPT
-		# generally parses command input
+        # runs optimization mumbo jumbo if in mode OPT
+        # generally parses command input
 sock.close()

@@ -1,7 +1,7 @@
 import serial, time
 
 ### X-BEE
-port = 'COM9' # This pretty much has to be manually set (see getComPorts.py for help)
+port = 'COM11' # This pretty much has to be manually set (see getComPorts.py for help)
 ser = serial.Serial(port,38400,bytesize=serial.EIGHTBITS,
 			parity=serial.PARITY_NONE,stopbits=serial.STOPBITS_ONE)
 ser.close() # cleanup from old serial communications

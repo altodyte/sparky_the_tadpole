@@ -20,6 +20,13 @@ const int LED_LEFT = 30;
 
 int IR_threshold = 300;
 int IR_left_val, IR_right_val, IR_center_val;
+const int window = 20; 
+int index = 0, left_total = 0, left_average = 0;
+int center_total = 0, center_average = 0;
+int right_total = 0, right_average = 0;
+int IR_left_history[window];
+int IR_center_history[window];
+int IR_right_history[window];
 const int IR_LEFT = A0;
 const int IR_CENTER = A1;
 const int IR_RIGHT = A2;
@@ -198,7 +205,7 @@ void parse_commands(){
 }
 void write_servo_pos()
 {
-  //servo_0.write(p0);
+  servo_0.write(p0);
   servo_1.write(p1);
   servo_2.write(p2);
 }
@@ -224,3 +231,4 @@ void write_servo_pos_smoothed()
   servo_1.write(p1);
   servo_2.write(p2);
 }*/
+

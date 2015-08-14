@@ -58,7 +58,8 @@ while(True):
     if incoming != '':
         read_all_input(incoming)
     cmd = readInput("IMPERA> ", '')
-    if cmd in ["DIC!", "NICTERE!", "DORMI!", "EXPERGISCERE!", "SINISTER!", "DEXTER!"]:
+    if cmd in ["DIC!", "NICTERE!", "DORMI!", "EXPERGISCERE!", 
+    "SINISTER!", "DEXTER!","DESISTE!","ITE!","AGGREDERE!", "X!"]:
         ser.write(cmd)
     if (random.randint(1,1000)==10):
         ser.write("DIC!")

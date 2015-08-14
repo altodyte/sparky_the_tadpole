@@ -59,7 +59,11 @@ while(True):
         read_all_input(incoming)
     cmd = readInput("IMPERA> ", '')
     if cmd in ["DIC!", "NICTERE!", "DORMI!", "EXPERGISCERE!", 
-    "SINISTER!", "DEXTER!","DESISTE!","ITE!","AGGREDERE!", "X!"]:
+    "SINISTER!", "DEXTER!","DESISTE!","ITE!","AGGREDERE!", "X!", "AUDI!"]:
+        ser.write(cmd)
+    if cmd[0:5] == "AUDI!":
+        print "Params Sent: "
+        print cmd[5:]
         ser.write(cmd)
     if (random.randint(1,1000)==10):
         ser.write("DIC!")

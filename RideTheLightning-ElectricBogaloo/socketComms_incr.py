@@ -11,6 +11,7 @@ import socket, select, time
 
 UDP_IP = "127.0.0.1"
 UDP_PORT = 61557
+# try 10.0.0.10
 
 sock = socket.socket(socket.AF_INET, # Internet
                      socket.SOCK_DGRAM) # UDP
@@ -28,6 +29,7 @@ coords_start = (xpos, ypos)
 time_start = time.time()
 
 running = True
+stale = 0
 while running:
     # getPosition() # Updates xpos, ypos, heading when available (Via God-Eye UDP)
     timeout = 0.1

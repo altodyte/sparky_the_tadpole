@@ -1,6 +1,8 @@
-
 def get_pos(filename):
     """reads tcpdump file and returns latest position"""
+    # command prior to start in separate process to read from ethport:
+    # sudo tcpdump -i eth0 udp port 61557 -A >>test3.txt
+
     x = file(filename,'r').read()
     x = x.splitlines()
     last = -1
@@ -19,4 +21,4 @@ def get_pos(filename):
         except:
             last += -1
 
-return xpos, ypos, zpos
+    return xpos, ypos, zpos

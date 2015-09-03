@@ -31,7 +31,7 @@ def get_pos(filename):
         except:
             last += -1
 
-return xpos, ypos, zpos
+    return xpos, ypos, zpos
 
 def readInput( caption, default, timeout = 0.1):
     start_time = time.time()
@@ -39,11 +39,11 @@ def readInput( caption, default, timeout = 0.1):
     input = ''
     while True:
         if msvcrt.kbhit():
-            chr = msvcrt.getche()
-            if ord(chr) == 13: # enter_key
+            char = msvcrt.getche()
+            if ord(char) == 13: # enter_key
                 break
-            elif ord(chr) >= 32: #space_char
-                input += chr
+            elif ord(char) >= 32: #space_char
+                input += char
         if len(input) == 0 and (time.time() - start_time) > timeout:
             break
     print ''  # needed to move to next line
@@ -70,8 +70,6 @@ try:
 except Exception, e:
     print "error open serial port: " + str(e)
     exit()
-stale = 0 # Number of calls since freshness
-line = "" # storage for raw line
 
 # availability check on Tadpole waits for a write
 print "INCIPIT"
@@ -86,7 +84,7 @@ while(True):
     if cmd in ["DIC!", "NICTERE!", "DORMI!", "EXPERGISCERE!", 
     "SINISTER!", "DEXTER!","DESISTE!","ITE!","AGGREDERE!", "X!", "AUDI!"]:
         ser.write(cmd)
-    if cmd[0:5] == "AUDI!":
+    if cmd[0:5] == "AUDI!": # AUDI! a,b,c,d,e,f
         print "Params Sent: "
         print cmd[5:]
         ser.write(cmd)

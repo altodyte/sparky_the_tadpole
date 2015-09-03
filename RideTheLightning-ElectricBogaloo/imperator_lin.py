@@ -2,7 +2,6 @@ import sys, serial, time, random
 import get_last_pos
 import pygame
 from pygame.locals import *
-from random import *
 import math
 from math import atan2, degrees, pi, sin, cos, radians, sqrt
 import numpy as np
@@ -30,46 +29,124 @@ def substr_in_str_list(substr, str_list):
 class Model:
     """encodes simulator world state"""
     def __init__(self):
-        self.text_in = None
+        self.text_in = []
         self.last_command = "None"
-        self.command_to_send = None
+        self.command_to_send = "None"
+        self.pushed_params_list = [0,0,0,0,0,0]
         self.pushed_params = "n,n,n,n,n,n"
         self.to_push = "0,0,0,0,0,0" # replace with draw from optimizer
         self.control_state = "Initializing"
         self.start_run_time = time.time()
-        self.start_pos = (0,0)
-
+        self.start_pos = (0,0,0)
 
     def update_model(self):
-        # move through control states here?
-        dt = self.clock.tick()/1000.0
-        state_progression()
-        send_command()
-
+        # move through control states here
+        self.state_progression()
+        self.send_command()
 
     def state_progression(self):
         if self.control_state == "Initializing":
             if substr_in_str_list("EGO RANUNCULUS", self.text_in):
-                self.control_state = "send_new"
-                return None
-        if self.control_state = "send_new":
-            new_params = optimize_w_ga.get_new_params()
-            self.to_push = ', '.join(map(str, new_params))
-            self.command_to_send = "AUDI!" + self.to_push
+                print "hit"
+                time.sleep(1)
+                new_params = optimize_w_ga.get_new_params()
+                self.to_push = ','.join(map(str, new_params))
+                self.command_to_send = "AUDI!" + self.to_push
+                self.pushed_params = self.to_push
+                self.pushed_params_list = new_params
                 
+                self.control_state = "Pushing"
+                return None                
         if self.control_state == "Pushing":
+            if substr_in_str_list("AUDIVI", self.text_in):
+                self.command_to_send = "ITE!"
+                self.control_state = "Starting_run"
+                return None
+        if self.control_state == "Starting_run":
+            if substr_in_str_list("EO", self.text_in):
+                x, y, z = get_last_pos.get_pos('test3.txt')
+                self.start_pos = (x,y,z)
+                self.start_run_time = time.time()
+                self.control_state = "Running"
+                return None
+        if self.control_state == "Running":
+            if substr_in_str_list("From STRAIGHT", self.text_in):
+                print "logging run"
+                x_e, y_e, z_e = get_last_pos.get_pos('test3.txt')
+                end_time = time.time()
+                parameter_list = self.pushed_params_list
+                time_diff = end_time - self.start_run_time
+                euclid_dist = sqrt((x_e-self.start_pos[0])**2+(y_e-self.start_pos[1])**2)
+                speed = euclid_dist/time_diff
+                d_h1 = z_e - self.start_pos[2]
+                d_h2 = self.start_pos[2] - z_e
+                if abs(d_h1)<abs(d_h2):
+                    heading_change = d_h1
+                else:
+                    heading_change = d_h2
+                print speed
+                optimize_w_ga.write_back(parameter_list, speed, heading_change, euclid_dist, time_diff)
+                
+                new_params = optimize_w_ga.get_new_params()
+                self.to_push = ','.join(map(str, new_params))
+                self.command_to_send = "AUDI!" + self.to_push
+                self.pushed_params = self.to_push
+                self.pushed_params_list = new_params
 
+                self.control_state = "Starting_run"
+                return None
+            if (time.time()-self.start_run_time)>30:
+                print "logging run"
+                x_e, y_e, z_e = get_last_pos.get_pos('test3.txt')
+                end_time = time.time()
+                parameter_list = self.pushed_params_list
+                time_diff = end_time - self.start_run_time
+                euclid_dist = sqrt((x_e-self.start_pos[0])**2+(y_e-self.start_pos[1])**2)
+                speed = euclid_dist/time_diff
+                d_h1 = z_e - self.start_pos[2]
+                d_h2 = self.start_pos[2] -z_e
+                if abs(d_h1)<abs(d_h2):
+                    heading_change = d_h1
+                else:
+                    heading_change = d_h2
+                print speed
+                optimize_w_ga.write_back(parameter_list, speed, heading_change, euclid_dist, time_diff)
+                new_params = optimize_w_ga.get_new_params()
+                self.to_push = ','.join(map(str, new_params))
+                self.command_to_send = "AUDI!" + self.to_push
+                self.pushed_params = self.to_push
+                self.pushed_params_list = new_params
 
-
-
-
+                self.command_to_send = "DESISTE!"
+                self.control_state = "Starting_run"
+                return None
+        
+    def log_run(self):
+        print "logging run"
+        x_e, y_e, z_e = get_last_pos.get_pos('test3.txt')
+        end_time = time.time()
+        parameter_list = self.pushed_params_list
+        time_diff = end_time - self.start_run_time
+        euclid_dist = sqrt((x_e-self.start_pos[0])**2+(y_e-self.start_pos[1])**2)
+        speed = euclid_dist/time_diff
+        d_h1 = z_e - self.start_pos[2]
+        d_h2 = self.start_pos[2]
+        if abs(d_h1)<abs(d_h2):
+            heading_change = d_h1
+        else:
+            heading_change = d_h2
+        optimize_w_ga.write_back(parameter_list, speed, heading_change, euclid_dist, time_diff)
+        
     def send_command(self):
         """sends queued command"""
-        if self.command_to_send is not None:
+        if self.command_to_send is not "None":
             if self.command_to_send == "AUDI!":
                 params = file('params.txt','r').read() # AUDI! a,b,c,d,e,f
                 self.command_to_send += params
             ser.write(self.command_to_send)
+            self.last_command = self.command_to_send
+            self.command_to_send = "None"
+
 
 class PyGameWindowView:
     """encodes view of simulation"""
@@ -87,18 +164,18 @@ class PyGameWindowView:
 
         myfont = pygame.font.SysFont("monospace", 12, bold = True)
         # key bindings
-        binding_text = ["DIC: R", "NICTERE: T", "DORMI: Q", "EXPERGISCERE: E"
+        binding_text = ["DIC: R", "NICTERE: T", "DORMI: Q", "EXPERGISCERE: E",
                         "SINISTER: A", "DEXTER: D", "DESISTE: S", "ITE: F",
                         "AGGREDERE: W", "AUDI: G"]
         yloc = 20
         for btext in binding_text:
-            self.screen.blit(myfont.render(btext), (100, yloc))
+            self.screen.blit(myfont.render(btext, 1, (0,0,0)), (100, yloc))
             yloc += 20
 
-        text_c = myfont.render("Imperator Control State: "+self.model.control_state)
-        text_pushed = myfont.render("pushed_params: "+self.model.pushed_params)
-        text_cmd = myfont.render("Last command: "+self.model.last_command)
-        text_cmd2 = myfont.render("Next command: "+self.model.command_to_send)
+        text_c = myfont.render("Imperator Control State: "+self.model.control_state,1, (0,0,0))
+        text_pushed = myfont.render("pushed_params: "+self.model.pushed_params, 1, (0,0,0))
+        text_cmd = myfont.render("Last command: "+self.model.last_command, 1, (0,0,0))
+        text_cmd2 = myfont.render("Next command: "+self.model.command_to_send, 1, (0,0,0))
         self.screen.blit(text_c, (100, yloc+20))
         self.screen.blit(text_pushed, (100, yloc+40))
         self.screen.blit(text_cmd, (100, yloc+60))
@@ -137,6 +214,8 @@ class PyGameController:
                 self.model.command_to_send = "EXPERGISCERE!"
             if event.key == pygame.K_g:
                 self.model.command_to_send = "AUDI!" # must be written with the params to send
+            if event.key == pygame.K_x:
+                self.model.command_to_send = "None"
 
 
 ### X-BEE
@@ -146,7 +225,7 @@ ser = serial.Serial(port,38400,bytesize=serial.EIGHTBITS,
 ser.close() # cleanup from old serial communications
 ser.timeout = 0.01
 
-# x, y, z = get_last_pos.get_pos(filename)
+
 
 try: 
     ser.open()
@@ -162,7 +241,7 @@ ser.write("EXPERGISCERE RANUNCULE")
 pygame.init()
 size = (500,600)
 screen = pygame.display.set_mode(size)
-model = Model(0,0) #initial windspeed, windheading
+model = Model() #initial windspeed, windheading
 view = PyGameWindowView(model,screen)
 controller = PyGameController(model,view)
 running = True
@@ -170,13 +249,15 @@ while running:
     incoming = ser.readline()
     if incoming != '':
         full_buffer = read_all_serial_input(incoming)
+        model.text_in = full_buffer
+    else:
+        model.text_in = []
 
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.mouse.set_cursor(*pygame.cursors.arrow)
             running = False
         controller.handle_keystroke_event(event)
-    model.text_in = full_buffer
     model.update_model()
     view.draw()
 

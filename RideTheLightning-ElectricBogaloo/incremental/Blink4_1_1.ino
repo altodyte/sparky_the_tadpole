@@ -433,4 +433,3 @@ void CSTRAIGHT_fcn()
   digitalWrite(LED_WHITE, HIGH);
   SSwim();
 }
-

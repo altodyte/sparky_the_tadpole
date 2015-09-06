@@ -103,8 +103,8 @@ def recombine_params(params_base, params_second):
         
 def weighted_draw(num_runs):
     """returns index of previous run to use, based on weighting of different sections"""
-    quartile = math.ceil(float(num_runs)/4.0)
-    half = math.ceil(float(num_runs)/2.0)    
+    quartile = min(1,math.ceil(float(num_runs)/4.0))
+    half = min(1,math.ceil(float(num_runs)/2.0))
     k = random.random()
     if k<.6:        
         return random.randint(num_runs-1-quartile,num_runs-1) #would like to reverse sort, but not built in

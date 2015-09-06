@@ -75,10 +75,10 @@ void setup() {
     IR_right_history[j] = 0;     
   }
   
-  //servo_0.attach(servo_0_pin);
+  servo_0.attach(servo_0_pin);
   servo_1.attach(servo_1_pin);
   servo_2.attach(servo_2_pin);
-  //servo_0.write(p0);
+  servo_0.write(p0);
   servo_1.write(p1);
   servo_2.write(p2);
   //nictare();
@@ -128,6 +128,9 @@ void nictare(){
 void dormire(){
   boolean sleeping = true;
   LEDs_all_off();
+  servo_0.detach();
+  servo_1.detach();
+  servo_2.detach();
   while(sleeping){
     Serial1.println("DORMIO");
     digitalWrite(LED_WHITE, HIGH);
@@ -140,6 +143,9 @@ void dormire(){
     if (incoming=="EXPERGISCERE"){ 
       Serial1.println("EXPERGISCOR");  
       sleeping = false;
+      servo_0.attach(servo_0_pin);
+      servo_1.attach(servo_1_pin);
+      servo_2.attach(servo_2_pin);
     }
     }
   }
@@ -325,7 +331,7 @@ void write_servo_pos_smoothed()
     p2 = p2 - sgn*smooth_constant;
   }
   servo_0.write(p0);
-  servo_1.write(p1);
+  servo_1.write(p1);//write the complement
   servo_2.write(p2);
 }
 void reset_state_lights()
@@ -340,6 +346,7 @@ void STOP_fcn()
   reset_state_lights();
   digitalWrite(LED_RED, HIGH);
   digitalWrite(LED_WHITE, HIGH);
+  digitalWrite(LED_YELLOW, HIGH);
   //servos aren't rewritten here
 }
 void TL_fcn()
@@ -372,30 +379,26 @@ void CSwim()//
   int amplitude_C = 60;
   float frequency_C = 2.5;
   float pos;
-  p2 = amplitude_C*sin(frequency_C*time)+turn_center;
-  //p2 = 90; //amplitude_C*sin(frequency_C*time)+90.0;
+  p2 = amplitude_C*sin(frequency_C*time)+90.0;
+//  p2 = 90; //amplitude_C*sin(frequency_C*time)+90.0;
 }
 void CTL_fcn()
 {
   reset_state_lights();
   digitalWrite(LED_YELLOW, HIGH);
   digitalWrite(LED_WHITE, HIGH);
-  p0 = 150;
-  p1 = 150;
-  
-  turn_center = 120;
-  //CSwim();
+  p0 = 20;
+  p1 = 160;
+  CSwim();
 }
 void CTR_fcn()
 {
   reset_state_lights();
   digitalWrite(LED_YELLOW, HIGH);
   digitalWrite(LED_WHITE, HIGH);
-  p0 = 30;  
-  p1 = 30;
-  p2 = 30;
-  turn_center = 60;
-  //CSwim();
+  p0 = 160;  
+  p1 = 20;
+  CSwim();
 }
 void STRAIGHT_fcn()
 {

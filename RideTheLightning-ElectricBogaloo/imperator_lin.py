@@ -45,25 +45,24 @@ class Model:
         self.send_command()
 
     def state_progression(self):
+        """Finite State Machine of optimizer"""
+        # Manual Control mode is outside this FSM - Key c 
+        # Entering Pushing mode - Key z
         if self.control_state == "Initializing":
             if substr_in_str_list("EGO RANUNCULUS", self.text_in):
                 print "hit"
                 time.sleep(1)
-                new_params = optimize_w_ga.get_new_params()
-                self.to_push = ','.join(map(str, new_params))
-                self.command_to_send = "AUDI!" + self.to_push
-                self.pushed_params = self.to_push
-                self.pushed_params_list = new_params
-                
-                self.control_state = "Pushing"
+                print "should refresh"
+                self.refresh_params()
+                self.control_state = "Manual Control"
                 return None                
         if self.control_state == "Pushing":
             if substr_in_str_list("AUDIVI", self.text_in):
-                self.command_to_send = "ITE!"
+                self.command_to_send = "AGGREDERE!"
                 self.control_state = "Starting_run"
                 return None
         if self.control_state == "Starting_run":
-            if substr_in_str_list("EO", self.text_in):
+            if substr_in_str_list("AGGREDIOR", self.text_in):
                 x, y, z = get_last_pos.get_pos('test3.txt')
                 self.start_pos = (x,y,z)
                 self.start_run_time = time.time()
@@ -71,66 +70,43 @@ class Model:
                 return None
         if self.control_state == "Running":
             if substr_in_str_list("From STRAIGHT", self.text_in):
-                print "logging run"
-                x_e, y_e, z_e = get_last_pos.get_pos('test3.txt')
-                end_time = time.time()
-                parameter_list = self.pushed_params_list
-                time_diff = end_time - self.start_run_time
-                euclid_dist = sqrt((x_e-self.start_pos[0])**2+(y_e-self.start_pos[1])**2)
-                speed = euclid_dist/time_diff
-                d_h1 = z_e - self.start_pos[2]
-                d_h2 = self.start_pos[2] - z_e
-                if abs(d_h1)<abs(d_h2):
-                    heading_change = d_h1
-                else:
-                    heading_change = d_h2
-                print speed
-                optimize_w_ga.write_back(parameter_list, speed, heading_change, euclid_dist, time_diff)
-                
-                new_params = optimize_w_ga.get_new_params()
-                self.to_push = ','.join(map(str, new_params))
-                self.command_to_send = "AUDI!" + self.to_push
-                self.pushed_params = self.to_push
-                self.pushed_params_list = new_params
-
+                print "should log"
+                self.log_run()
+                print "should refresh"
+                self.refresh_params()
+                self.command_to_send = "DESISTE!"
                 self.control_state = "Starting_run"
                 return None
             if (time.time()-self.start_run_time)>30:
-                print "logging run"
-                x_e, y_e, z_e = get_last_pos.get_pos('test3.txt')
-                end_time = time.time()
-                parameter_list = self.pushed_params_list
-                time_diff = end_time - self.start_run_time
-                euclid_dist = sqrt((x_e-self.start_pos[0])**2+(y_e-self.start_pos[1])**2)
-                speed = euclid_dist/time_diff
-                d_h1 = z_e - self.start_pos[2]
-                d_h2 = self.start_pos[2] -z_e
-                if abs(d_h1)<abs(d_h2):
-                    heading_change = d_h1
-                else:
-                    heading_change = d_h2
-                print speed
-                optimize_w_ga.write_back(parameter_list, speed, heading_change, euclid_dist, time_diff)
-                new_params = optimize_w_ga.get_new_params()
-                self.to_push = ','.join(map(str, new_params))
-                self.command_to_send = "AUDI!" + self.to_push
-                self.pushed_params = self.to_push
-                self.pushed_params_list = new_params
-
+                print "should log"
+                self.log_run()
+                print "should refresh"
+                self.refresh_params()
                 self.command_to_send = "DESISTE!"
                 self.control_state = "Starting_run"
                 return None
         
+    def refresh_params(self):
+        print "in refresh_params"
+        new_params = optimize_w_ga.get_new_params()
+        self.to_push = ','.join(map(str, new_params))
+        self.command_to_send = "AUDI!" + self.to_push
+        self.pushed_params = self.to_push
+        self.pushed_params_list = new_params
+
     def log_run(self):
-        print "logging run"
+        print "in log_run"
         x_e, y_e, z_e = get_last_pos.get_pos('test3.txt')
         end_time = time.time()
         parameter_list = self.pushed_params_list
         time_diff = end_time - self.start_run_time
+        if time_diff < 5:
+            print "Run too short"
+            return None
         euclid_dist = sqrt((x_e-self.start_pos[0])**2+(y_e-self.start_pos[1])**2)
         speed = euclid_dist/time_diff
         d_h1 = z_e - self.start_pos[2]
-        d_h2 = self.start_pos[2]
+        d_h2 = self.start_pos[2] - z_e
         if abs(d_h1)<abs(d_h2):
             heading_change = d_h1
         else:
@@ -189,7 +165,6 @@ class PyGameController:
         self.view = view
         
     def handle_keystroke_event(self,event): 
-        """builds and upgrades towers"""
         if event.type == KEYDOWN:            
             # control of movement
             if event.key == pygame.K_w:
@@ -216,6 +191,10 @@ class PyGameController:
                 self.model.command_to_send = "AUDI!" # must be written with the params to send
             if event.key == pygame.K_x:
                 self.model.command_to_send = "None"
+            if event.key == pygame.K_c:
+                self.model.control_state = "Manual Control"
+            if event.key == pygame.K_z:
+                self.model.control_state = "Pushing"
 
 
 ### X-BEE

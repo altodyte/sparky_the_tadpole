@@ -7,6 +7,8 @@ from math import atan2, degrees, pi, sin, cos, radians, sqrt
 import numpy as np
 import optimize_w_ga
 
+# sudo tcpdump -i eth0 udp port 61557 -A >>test3.txt
+
 def read_all_serial_input(incoming):
     full_buffer = [incoming]
     empty = False
@@ -52,7 +54,7 @@ class Model:
             if substr_in_str_list("EGO RANUNCULUS", self.text_in):
                 print "hit"
                 time.sleep(1)
-                print "should refresh"
+                print "init params"
                 self.refresh_params()
                 self.control_state = "Manual Control"
                 return None                
@@ -63,28 +65,30 @@ class Model:
                 return None
         if self.control_state == "Starting_run":
             if substr_in_str_list("AGGREDIOR", self.text_in):
+                print "Run Started"
                 x, y, z = get_last_pos.get_pos('test3.txt')
                 self.start_pos = (x,y,z)
                 self.start_run_time = time.time()
                 self.control_state = "Running"
                 return None
         if self.control_state == "Running":
-            if substr_in_str_list("From STRAIGHT", self.text_in):
-                print "should log"
+            if substr_in_str_list("From STRAIGHT", self.text_in) or substr_in_str_list("DESISTO", self.text_in) or substr_in_str_list("VERTO", self.text_in):
+                print "Run Ended should log - Manual"
                 self.log_run()
-                print "should refresh"
-                self.refresh_params()
-                self.command_to_send = "DESISTE!"
-                self.control_state = "Starting_run"
+                #self.command_to_send = "DESISTE!"
+                self.control_state = "Manual Control"
                 return None
             if (time.time()-self.start_run_time)>30:
-                print "should log"
+                print "Run Ended should log - Timeout"
                 self.log_run()
-                print "should refresh"
-                self.refresh_params()
                 self.command_to_send = "DESISTE!"
-                self.control_state = "Starting_run"
+                self.control_state = "Upload"
                 return None
+        if self.control_state == "Upload":
+            self.refresh_params()
+            self.control_state = "Pushing"
+            
+
         
     def refresh_params(self):
         print "in refresh_params"
@@ -112,6 +116,7 @@ class Model:
         else:
             heading_change = d_h2
         optimize_w_ga.write_back(parameter_list, speed, heading_change, euclid_dist, time_diff)
+        print "Run Logged"
         
     def send_command(self):
         """sends queued command"""
@@ -142,7 +147,7 @@ class PyGameWindowView:
         # key bindings
         binding_text = ["DIC: R", "NICTERE: T", "DORMI: Q", "EXPERGISCERE: E",
                         "SINISTER: A", "DEXTER: D", "DESISTE: S", "ITE: F",
-                        "AGGREDERE: W", "AUDI: G"]
+                        "AGGREDERE: W", "AUDI: G", "RUN START: Z", "MANUAL CONTROL: C"]
         yloc = 20
         for btext in binding_text:
             self.screen.blit(myfont.render(btext, 1, (0,0,0)), (100, yloc))
@@ -194,7 +199,7 @@ class PyGameController:
             if event.key == pygame.K_c:
                 self.model.control_state = "Manual Control"
             if event.key == pygame.K_z:
-                self.model.control_state = "Pushing"
+                self.model.control_state = "Upload"
 
 
 ### X-BEE
@@ -204,7 +209,7 @@ ser = serial.Serial(port,38400,bytesize=serial.EIGHTBITS,
 ser.close() # cleanup from old serial communications
 ser.timeout = 0.01
 
-
+# sudo tcpdump -i eth0 udp port 61557 -A >>test3.txt
 
 try: 
     ser.open()
